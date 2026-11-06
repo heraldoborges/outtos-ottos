@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Os Outtos Ottos</title>
+<meta name="description" content="Um catálogo de xarás: cientistas, imperadores, jogadores, personagens e curiosidades que se chamam Otto.">
+<meta property="og:title" content="Os Outtos Ottos">
+<meta property="og:description" content="Um catálogo de xarás para o Otto: mais de 60 Ottos, reais e fictícios.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%232F6FD6'/%3E%3Ccircle cx='18' cy='22' r='8' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Ccircle cx='46' cy='22' r='8' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Crect x='14' y='38' width='36' height='6' fill='%2314161B'/%3E%3Crect x='29' y='38' width='6' height='18' fill='%2314161B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Unbounded:wght@500;700;800&display=swap">
+<style>
+/* Layout: a field-guide catalog. Quiet hero, sticky filter bar, grid of mirror-symmetric emblems
+   (OTTO is a palindrome, so every emblem is built from O and T shapes reflected left-right),
+   detail sheet slides in from the right (desktop) or bottom (phone). */
+:root {
+  --bg: #F1F2F4;
+  --surface: #FFFFFF;
+  --ink: #14161B;
+  --muted: #5B616E;
+  --line: #D8DBE1;
+  --chip: #E4E6EB;
+  --accent: #2B40D4;
+  --scrim: rgba(20, 22, 27, .42);
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "Literata", Georgia, "Times New Roman", serif;
+  --f-mono: "DM Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111317; --surface: #1A1D23; --ink: #ECEEF2; --muted: #A2A8B4;
+    --line: #2B2F37; --chip: #242830; --accent: #95A3FF; --scrim: rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111317; --surface: #1A1D23; --ink: #ECEEF2; --muted: #A2A8B4;
+  --line: #2B2F37; --chip: #242830; --accent: #95A3FF; --scrim: rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.55;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg);
+}
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* Hero */
+.hero { padding-block: 48px 28px; display: grid; gap: 18px; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: 12px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); margin: 0;
+}
+h1 {
+  font-family: var(--f-display); font-weight: 800;
+  font-size: clamp(2.4rem, 8.2vw, 5.6rem); line-height: .98;
+  letter-spacing: -.02em; margin: 0; text-wrap: balance;
+}
+h1 .mirror { display: inline-block; }
+h1 .mirror b { font-weight: 800; color: var(--accent); }
+.lede { max-width: 60ch; margin: 0; font-size: 1.08rem; color: var(--muted); }
+.lede strong { color: var(--ink); font-weight: 600; }
+
+/* Controls */
+.controls {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.controls .wrap { padding-block: 12px; display: grid; gap: 10px; }
+.row1 { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.search { flex: 1 1 260px; min-width: 0; position: relative; }
+.search input {
+  width: 100%; font: inherit; font-family: var(--f-body); font-size: 15px;
+  padding: 10px 14px 10px 38px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+}
+.search input::placeholder { color: var(--muted); }
+.search svg { position: absolute; left: 13px; top: 50%; translate: 0 -50%; color: var(--muted); }
+.btn {
+  font-family: var(--f-mono); font-size: 13px; font-weight: 500;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 999px; padding: 9px 14px; cursor: pointer; white-space: nowrap;
+}
+.btn:hover { border-color: var(--ink); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn.solid { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .btn.solid { color: #111317; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.solid { color: #111317; } }
+.chips {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  padding-bottom: 2px; margin-inline: -2px; padding-inline: 2px;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  font-family: var(--f-mono); font-size: 12.5px; color: var(--ink);
+  background: var(--chip); border: 1px solid transparent;
+  border-radius: 999px; padding: 6px 12px; cursor: pointer;
+}
+.chip .dot { width: 9px; height: 9px; border-radius: 50%; }
+.chip .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--surface); border-color: var(--ink); }
+.status { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin: 0; }
+
+/* Grid */
+main { padding-block: 28px 56px; }
+.grid {
+  display: grid; gap: 28px 18px;
+  grid-template-columns: repeat(auto-fill, minmax(156px, 1fr));
+}
+.card {
+  display: grid; gap: 4px; align-content: start; text-align: left;
+  background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer;
+  min-width: 0;
+}
+.card canvas {
+  width: 100%; max-width: 100%; aspect-ratio: 1; display: block;
+  border-radius: 6px; margin-bottom: 8px;
+  transition: transform .18s ease;
+}
+.card:hover canvas { transform: translateY(-3px) rotate(-1deg); }
+.c-name { font-family: var(--f-display); font-weight: 700; font-size: 14.5px; line-height: 1.2; text-wrap: balance; }
+.c-meta { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+.c-tag { font-size: 14px; line-height: 1.4; color: var(--muted); }
+.badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+.badge {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
+}
+.badge.br { border-color: #1E9E5A; color: #1E9E5A; }
+.empty { padding: 40px 0; display: grid; gap: 12px; justify-items: start; }
+.empty p { margin: 0; color: var(--muted); }
+
+footer { border-top: 1px solid var(--line); }
+footer .wrap { padding-block: 22px 36px; display: grid; gap: 6px; }
+footer p { margin: 0; font-size: 14px; color: var(--muted); max-width: 70ch; }
+
+/* Detail sheet */
+.overlay { position: fixed; inset: 0; z-index: 20; }
+.scrim { position: absolute; inset: 0; background: var(--scrim); }
+.sheet {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(560px, 100%); background: var(--surface);
+  display: flex; flex-direction: column;
+  box-shadow: -20px 0 60px rgba(0, 0, 0, .18);
+  animation: slideIn .24s ease-out;
+}
+@keyframes slideIn { from { transform: translateX(28px); opacity: 0; } }
+.sheet-top {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding-top: max(14px, env(safe-area-inset-top, 0px));
+  padding-bottom: 10px;
+  padding-left: 24px;
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid var(--line);
+}
+.sheet-top .count { font-family: var(--f-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink); cursor: pointer;
+  display: grid; place-items: center;
+}
+.icon-btn:hover { border-color: var(--ink); }
+.sheet-body {
+  overflow-y: auto; flex: 1;
+  padding-top: 24px; padding-bottom: 28px;
+  padding-left: 24px;
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px; align-content: start;
+}
+.p-head { display: grid; grid-template-columns: 168px 1fr; gap: 20px; align-items: end; }
+.p-head canvas { width: 100%; aspect-ratio: 1; border-radius: 8px; display: block; }
+.p-head img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; display: block; }
+.p-id { min-width: 0; display: grid; gap: 6px; }
+.p-cat {
+  margin: 0; display: flex; gap: 8px; align-items: center;
+  font-family: var(--f-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.p-cat .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.p-id h2 {
+  font-family: var(--f-display); font-weight: 700; font-size: clamp(1.4rem, 4.5vw, 1.9rem);
+  line-height: 1.08; margin: 0; text-wrap: balance; overflow-wrap: anywhere;
+}
+.p-meta { margin: 0; font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.p-tag { margin: 0; font-size: 1.22rem; line-height: 1.35; font-style: italic; text-wrap: balance; }
+.p-text p { margin: 0 0 .8em; max-width: 62ch; }
+.p-text p:last-child { margin-bottom: 0; }
+.p-fact {
+  border-left: 3px solid var(--fact, var(--accent));
+  padding: 4px 0 4px 16px; display: grid; gap: 4px;
+}
+.p-fact .l {
+  margin: 0; font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted);
+}
+.p-fact p:last-child { margin: 0; }
+.p-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.p-links a {
+  font-family: var(--f-mono); font-size: 13px; text-decoration: none;
+  color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px;
+}
+.p-links a:hover { border-color: var(--ink); }
+.p-links a.primary { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.p-note { margin: 0; font-size: 13px; color: var(--muted); }
+.p-video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: var(--chip); }
+.p-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.p-credit { margin: 6px 0 0; font-family: var(--f-mono); font-size: 11px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.p-credit a { color: inherit; }
+.sheet-nav {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding-top: 12px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  padding-left: 24px;
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 640px) {
+  .hero { padding-block: 32px 22px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; }
+  .sheet {
+    top: 5vh; left: 0; width: 100%; border-radius: 16px 16px 0 0;
+    animation-name: slideUp; box-shadow: 0 -16px 50px rgba(0, 0, 0, .2);
+  }
+  .sheet-top, .sheet-body, .sheet-nav {
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+  }
+  .sheet-top { padding-top: 12px; }
+  .p-head { grid-template-columns: 120px 1fr; gap: 14px; }
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sheet { animation: none; }
+  .card canvas { transition: none; }
+  .card:hover canvas { transform: none; }
+}
+</style>
+
+</head>
+<body>
+
+<header class="wrap hero">
+  <p class="eyebrow">Um catálogo de xarás</p>
+  <h1>Os Outtos <span class="mirror">Ottos</span></h1>
+  <p class="lede">Imperadores, cientistas, um técnico campeão da Eurocopa, um robô e até um boneco inflável que pilota avião. Conheça <strong id="total-ottos">os</strong> Ottos que dividem o nome com o nosso Otto. Toque em qualquer um para ler a história.</p>
+</header>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="row1">
+      <label class="search" for="busca">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input id="busca" type="search" placeholder="Buscar por nome, país ou assunto" autocomplete="off" aria-label="Buscar Ottos">
+      </label>
+      <button class="btn" id="so-brasil" type="button" aria-pressed="false">Só do Brasil</button>
+      <button class="btn solid" id="aleatorio" type="button">Otto aleatório</button>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Categorias"></div>
+    <p class="status" id="status" aria-live="polite"></p>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>
+    <p id="empty-msg">Nenhum Otto encontrado.</p>
+    <button class="btn" id="limpar" type="button">Limpar filtros</button>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Cada imagem é um emblema desenhado a partir do nome do Otto, com círculos (O) e barras (T) espelhados, porque Otto se lê igual dos dois lados. Fotos e vídeos de verdade estão nos links para a Wikipédia e o YouTube de cada página.</p>
+    <p>Feito para o Otto.</p>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="scrim" id="scrim"></div>
+  <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="p-name">
+    <div class="sheet-top">
+      <span class="count" id="p-count"></span>
+      <button class="icon-btn" id="fechar" type="button" aria-label="Fechar">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheet-body">
+      <div class="p-head">
+        <div id="p-media"></div>
+        <div class="p-id">
+          <p class="p-cat"><span class="dot" id="p-dot"></span><span id="p-cat"></span></p>
+          <h2 id="p-name"></h2>
+          <p class="p-meta" id="p-meta"></p>
+        </div>
+      </div>
+      <p class="p-tag" id="p-tag"></p>
+      <div class="p-text" id="p-text"></div>
+      <div class="p-video" id="p-video" hidden></div>
+      <div class="p-fact" id="p-fact-box">
+        <p class="l">Você sabia?</p>
+        <p id="p-fact"></p>
+      </div>
+      <div class="p-links" id="p-links"></div>
+    </div>
+    <div class="sheet-nav">
+      <button class="btn" id="anterior" type="button">← Anterior</button>
+      <button class="btn" id="proximo" type="button">Próximo →</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+const CATS = {
+  cien: { label: "Ciência e invenção", color: "#2F6FD6" },
+  hist: { label: "História", color: "#8E3B5A" },
+  arte: { label: "Arte e design", color: "#E2632C" },
+  musi: { label: "Música", color: "#7A4FD0" },
+  letr: { label: "Letras e ideias", color: "#2E8C6A" },
+  espo: { label: "Esporte", color: "#CF9A17" },
+  tela: { label: "Cinema e TV", color: "#D23C4A" },
+  ficc: { label: "Personagens", color: "#1898AA" },
+  curi: { label: "Curiosidades", color: "#5B6472" }
+};
+
+/* Data. Each entry is one Otto. Optional fields:
+   img    -> photo URL (e.g. https://upload.wikimedia.org/...) or a local file such as "img/hahn.jpg".
+             When present it replaces the generated emblem on the detail page.
+   credit -> photo credit shown under the photo, e.g. "Foto: Autor / CC BY-SA 4.0".
+   source -> link to the photo's page (e.g. the Wikimedia Commons file page).
+   video  -> a YouTube link (watch?v=, youtu.be/ or shorts/). It is embedded on the detail page.
+   site   -> official website link.
+   br     -> true for Brazilian Ottos.
+
+   Example:
+   { id: "exemplo", name: "Otto Exemplo", years: "1900–1980", from: "Brasil", cat: "cien", br: true,
+     tag: "Uma frase curta", text: ["Primeiro parágrafo.", "Segundo parágrafo."],
+     fact: "Um fato curioso.", wiki: "Termo de busca na Wikipédia", yt: "termo de busca no YouTube",
+     img: "img/exemplo.jpg", credit: "Foto: Fulano / CC BY 4.0", source: "https://commons.wikimedia.org/...",
+     video: "https://www.youtube.com/watch?v=XXXXXXXXXXX" },
+   Categories (cat): cien, hist, arte, musi, letr, espo, tela, ficc, curi.
+   The id must use only lowercase letters, digits and hyphens: it becomes the page link (#id). */
+const OTTOS = [
+  { id: "hahn", name: "Otto Hahn", years: "1879–1968", from: "Alemanha", cat: "cien",
+    tag: "O químico que descobriu a fissão nuclear",
+    text: ["Químico alemão que passou décadas estudando elementos radioativos. Em dezembro de 1938, com Fritz Strassmann, percebeu que o urânio atingido por nêutrons se partia em átomos menores. Era a fissão nuclear.", "Recebeu o Prêmio Nobel de Química de 1944."],
+    fact: "A física Lise Meitner, parceira de pesquisa dele por cerca de 30 anos, foi quem ajudou a explicar o que eles tinham visto. Muita gente acha que ela também merecia o Nobel.",
+    wiki: "Otto Hahn", yt: "Otto Hahn fissão nuclear" },
+  { id: "lilienthal", name: "Otto Lilienthal", years: "1848–1896", from: "Alemanha", cat: "cien",
+    tag: "O rei dos planadores",
+    text: ["Engenheiro alemão e um dos primeiros humanos a voar de verdade. Construiu planadores com estrutura de salgueiro e asas de tecido e fez mais de 2 mil voos, saltando de uma colina artificial perto de Berlim.", "Morreu em 1896, um dia depois de cair durante um voo."],
+    fact: "Os irmãos Wright estudaram as tabelas de sustentação publicadas por Lilienthal antes de construir o próprio avião.",
+    wiki: "Otto Lilienthal", yt: "Otto Lilienthal planador voo" },
+  { id: "nikolaus-otto", name: "Nikolaus August Otto", years: "1832–1891", from: "Alemanha", cat: "cien",
+    tag: "Otto no sobrenome, e dentro de quase todo carro",
+    text: ["Comerciante que viajava vendendo mercadorias e aprendeu engenharia por conta própria. Em 1876 construiu o primeiro motor de quatro tempos que funcionou bem: admissão, compressão, explosão e escape.", "Esse funcionamento ganhou o nome de ciclo Otto e é o princípio do motor a gasolina até hoje."],
+    fact: "No Brasil, carros a álcool e flex também funcionam pelo ciclo Otto.",
+    wiki: "Ciclo de Otto", yt: "ciclo Otto motor quatro tempos animação" },
+  { id: "warburg", name: "Otto Warburg", years: "1883–1970", from: "Alemanha", cat: "cien",
+    tag: "Estudou como as células respiram",
+    text: ["Bioquímico alemão que ganhou o Nobel de Medicina de 1931 por descobrir como funciona uma enzima da respiração celular.", "Também observou que células de tumor usam açúcar de um jeito diferente das células normais. O fenômeno, chamado efeito Warburg, é estudado até hoje na pesquisa sobre câncer."],
+    fact: "Hans Krebs, que trabalhou como assistente no laboratório de Warburg, ganhou o próprio Nobel em 1953.",
+    wiki: "Otto Heinrich Warburg", yt: "Otto Warburg efeito Warburg" },
+  { id: "stern", name: "Otto Stern", years: "1888–1969", from: "Alemanha e EUA", cat: "cien",
+    tag: "Mostrou que o mundo dos átomos funciona aos saltos",
+    text: ["Físico alemão que, em 1922, fez com Walther Gerlach um experimento com um feixe de átomos de prata passando por um ímã. Em vez de se espalhar, o feixe se dividiu em dois.", "Foi uma das primeiras provas de que certas propriedades dos átomos só assumem valores específicos. Stern ganhou o Nobel de Física de 1943."],
+    fact: "Conta-se que a marca da prata na placa só ficou visível por causa da fumaça do charuto barato de Stern, que escureceu o metal.",
+    wiki: "Experimento de Stern-Gerlach", yt: "Stern Gerlach experiment" },
+  { id: "loewi", name: "Otto Loewi", years: "1873–1961", from: "Alemanha e Áustria", cat: "cien",
+    tag: "A descoberta que veio num sonho",
+    text: ["Farmacologista que provou que os nervos conversam com os órgãos usando substâncias químicas, os neurotransmissores. Fez isso com dois corações de rã: o líquido de um coração estimulado mudava o ritmo do outro.", "Dividiu o Nobel de Medicina de 1936 com Henry Dale."],
+    fact: "A ideia do experimento apareceu num sonho. Loewi anotou de madrugada, não entendeu a própria letra de manhã, sonhou de novo na noite seguinte e dessa vez foi direto para o laboratório.",
+    wiki: "Otto Loewi", yt: "Otto Loewi experimento coração de rã" },
+  { id: "diels", name: "Otto Diels", years: "1876–1954", from: "Alemanha", cat: "cien",
+    tag: "Uma reação química com nome e sobrenome",
+    text: ["Químico alemão que, em 1928, descreveu com o aluno Kurt Alder uma forma elegante de juntar moléculas formando anéis de carbono.", "A reação de Diels-Alder é usada até hoje para fabricar remédios e plásticos e rendeu aos dois o Nobel de Química de 1950."],
+    fact: "O pai dele, Hermann Diels, era um estudioso famoso dos filósofos da Grécia antiga.",
+    wiki: "Otto Diels", yt: "reação de Diels-Alder" },
+  { id: "wallach", name: "Otto Wallach", years: "1847–1931", from: "Alemanha", cat: "cien",
+    tag: "O químico dos cheiros",
+    text: ["Químico alemão que organizou o estudo dos terpenos, substâncias que dão cheiro a plantas como pinho, limão e hortelã.", "O trabalho dele ajudou a indústria de perfumes e aromas a entender e reproduzir esses cheiros. Ganhou o Nobel de Química de 1910."],
+    fact: "Grande parte da pesquisa foi feita com óleos essenciais, aqueles extraídos de cascas, folhas e flores.",
+    wiki: "Otto Wallach", yt: "Otto Wallach terpenos" },
+  { id: "meyerhof", name: "Otto Meyerhof", years: "1884–1951", from: "Alemanha e EUA", cat: "cien",
+    tag: "Explicou de onde vem a energia dos músculos",
+    text: ["Bioquímico alemão que estudou como o músculo transforma açúcar em energia. Dividiu o Nobel de Medicina de 1922 com o britânico A. V. Hill, e parte do caminho que ele descreveu, a glicólise, também leva seu nome.", "Por ser judeu, teve de fugir da Alemanha nazista."],
+    fact: "Em 1940 ele escapou da França atravessando os Pireneus a pé até a Espanha, com ajuda da rede de resgate do americano Varian Fry.",
+    wiki: "Otto Fritz Meyerhof", yt: "Otto Meyerhof glicólise" },
+  { id: "guericke", name: "Otto von Guericke", years: "1602–1686", from: "Alemanha", cat: "cien",
+    tag: "O homem que mostrou a força do vácuo",
+    text: ["Cientista e prefeito de Magdeburgo. Inventou uma bomba de vácuo e fez uma demonstração famosa: juntou duas meias-esferas de metal, tirou o ar de dentro e nem duas parelhas de cavalos conseguiram separá-las.", "O experimento ficou conhecido como hemisférios de Magdeburgo."],
+    fact: "Ele também construiu uma das primeiras máquinas de eletricidade estática, uma bola de enxofre que girava e era esfregada com a mão.",
+    wiki: "Hemisférios de Magdeburgo", yt: "Magdeburg hemispheres experiment" },
+  { id: "schott", name: "Otto Schott", years: "1851–1935", from: "Alemanha", cat: "cien",
+    tag: "O vidro que aguenta o forno",
+    text: ["Químico alemão especialista em vidro. Em Jena, fundou uma vidraria com Ernst Abbe e Carl Zeiss e criou vidros novos para lentes e microscópios.", "Também desenvolveu o vidro borossilicato, que resiste a mudanças bruscas de temperatura."],
+    fact: "É o mesmo tipo de vidro de muita travessa que vai ao forno e de boa parte da vidraria de laboratório.",
+    wiki: "Otto Schott", yt: "vidro borossilicato como é feito" },
+  { id: "otto-bayer", name: "Otto Bayer", years: "1902–1982", from: "Alemanha", cat: "cien",
+    tag: "O inventor do poliuretano",
+    text: ["Químico industrial alemão que, em 1937, criou o poliuretano, um plástico que pode virar espuma macia, espuma rígida, verniz ou borracha.", "Ele está em colchões, assentos de carro, solados de tênis e no isolamento de geladeiras."],
+    fact: "Apesar do sobrenome, ele não era da família que fundou a empresa Bayer, embora tenha trabalhado lá.",
+    wiki: "Otto Bayer", yt: "poliuretano espuma como é feita" },
+  { id: "rohwedder", name: "Otto Rohwedder", years: "1880–1960", from: "EUA", cat: "cien",
+    tag: "O inventor do pão fatiado",
+    text: ["Joalheiro americano que passou anos desenvolvendo uma máquina capaz de fatiar e embalar pão.", "Em 7 de julho de 1928, uma padaria da cidade de Chillicothe, no Missouri, começou a vender o primeiro pão fatiado à máquina."],
+    fact: "Em inglês, quando algo é genial, se diz que é a melhor coisa desde o pão fatiado. O primeiro protótipo de Rohwedder tinha sido destruído num incêndio em 1917.",
+    wiki: "Otto Frederick Rohwedder", yt: "Otto Rohwedder sliced bread history" },
+  { id: "struve", name: "Otto Struve", years: "1897–1963", from: "Rússia e EUA", cat: "cien",
+    tag: "Quarta geração de uma família de astrônomos",
+    text: ["Astrônomo nascido no Império Russo que se mudou para os Estados Unidos e dirigiu o Observatório Yerkes.", "Estudou a rotação das estrelas e o gás que existe entre elas."],
+    fact: "O bisavô, o avô e o pai dele também eram astrônomos. Os Struve são uma das grandes dinastias da astronomia.",
+    wiki: "Otto Struve", yt: "Yerkes Observatory history" },
+  { id: "otto-diy", name: "Otto DIY", years: "robô de código aberto", from: "mundo todo", cat: "cien",
+    tag: "Um robô que a gente mesmo monta",
+    text: ["Otto é um pequeno robô de duas pernas, de código aberto, pensado para ensinar programação e eletrônica a crianças.", "As peças podem ser impressas em 3D, e ele anda, dança e desvia de obstáculos comandado por uma placa Arduino."],
+    fact: "Como o projeto é aberto, escolas do mundo todo criam e compartilham versões próprias do Otto.",
+    wiki: null, site: "https://www.ottodiy.com", yt: "Otto DIY robot" },
+
+  { id: "otto-i", name: "Otto I, o Grande", years: "912–973", from: "Germânia", cat: "hist",
+    tag: "O primeiro imperador do Sacro Império",
+    text: ["Rei dos germânicos que derrotou os magiares na Batalha de Lechfeld, em 955, e foi coroado imperador em Roma pelo papa, em 962.", "Esse momento é considerado o começo do Sacro Império Romano-Germânico, que durou mais de 800 anos."],
+    fact: "Ele foi sepultado na Catedral de Magdeburgo, a mesma cidade onde, séculos depois, Otto von Guericke faria o experimento dos hemisférios.",
+    wiki: "Otão I do Sacro Império Romano-Germânico", yt: "Otto I o Grande história" },
+  { id: "otto-iii", name: "Otto III", years: "980–1002", from: "Sacro Império", cat: "hist",
+    tag: "Rei aos três anos de idade",
+    text: ["Filho de Otto II, virou rei em 983, com apenas três anos. No começo, quem governou foram a mãe, Teófano, e a avó, Adelaide.", "Foi coroado imperador aos 16 anos e sonhava em renovar o antigo Império Romano. Morreu jovem, aos 21."],
+    fact: "Segundo os cronistas, no ano 1000 ele mandou abrir o túmulo de Carlos Magno, em Aachen.",
+    wiki: "Otão III do Sacro Império Romano-Germânico", yt: "Otto III emperor" },
+  { id: "bismarck", name: "Otto von Bismarck", years: "1815–1898", from: "Prússia", cat: "hist",
+    tag: "O chanceler que unificou a Alemanha",
+    text: ["Político prussiano que comandou a unificação da Alemanha em 1871 e foi o primeiro chanceler do novo império, até 1890. Ficou conhecido como Chanceler de Ferro.", "Também criou alguns dos primeiros seguros sociais do mundo, como o seguro-saúde e a aposentadoria para trabalhadores."],
+    fact: "A capital do estado americano de Dakota do Norte se chama Bismarck em homenagem a ele.",
+    wiki: "Otto von Bismarck", yt: "Bismarck unificação alemã" },
+  { id: "otto-grecia", name: "Otto da Grécia", years: "1815–1867", from: "Baviera e Grécia", cat: "hist",
+    tag: "O primeiro rei da Grécia moderna",
+    text: ["Príncipe da Baviera escolhido pelas potências europeias para ser o primeiro rei da Grécia independente, em 1832, quando tinha 17 anos.", "Reinou por quase 30 anos, até ser deposto em 1862 e voltar para a Baviera."],
+    fact: "Para se aproximar do povo, ele adotou a fustanela, a saia pregueada do traje tradicional grego.",
+    wiki: "Otão da Grécia", yt: "King Otto of Greece" },
+  { id: "habsburg", name: "Otto von Habsburg", years: "1912–2011", from: "Áustria", cat: "hist",
+    tag: "O príncipe herdeiro que virou deputado europeu",
+    text: ["Filho mais velho do último imperador da Áustria-Hungria, nasceu herdeiro de um império que acabou quando ele tinha seis anos.", "Passou a vida defendendo a união da Europa e foi deputado do Parlamento Europeu de 1979 a 1999."],
+    fact: "Em 1989, a organização que ele presidia ajudou a promover o Piquenique Pan-Europeu, na fronteira da Áustria com a Hungria, por onde centenas de alemães do leste fugiram para o oeste.",
+    wiki: "Otto von Habsburg", yt: "Piquenique Pan-Europeu 1989" },
+  { id: "otto-frank", name: "Otto Frank", years: "1889–1980", from: "Alemanha e Países Baixos", cat: "hist",
+    tag: "O pai que publicou o diário de Anne Frank",
+    text: ["Empresário judeu alemão que se escondeu com a família por dois anos num anexo secreto em Amsterdã, durante a Segunda Guerra.", "Foi o único dos oito escondidos que sobreviveu aos campos de concentração. Depois da guerra, publicou o diário da filha, Anne."],
+    fact: "O diário foi presente de aniversário de 13 anos de Anne. O esconderijo hoje é um museu, a Casa de Anne Frank.",
+    wiki: "Otto Frank", yt: "Casa de Anne Frank Otto Frank" },
+  { id: "weidt", name: "Otto Weidt", years: "1883–1947", from: "Alemanha", cat: "hist",
+    tag: "Salvou funcionários na sua oficina de vassouras",
+    text: ["Dono de uma oficina de vassouras e escovas em Berlim, Weidt, ele próprio quase cego, empregava trabalhadores judeus cegos e surdos durante o nazismo.", "Subornou policiais, falsificou papéis e escondeu funcionários para salvá-los. Foi reconhecido como Justo entre as Nações."],
+    fact: "A antiga oficina, perto da praça Hackescher Markt, em Berlim, hoje é um museu.",
+    wiki: "Otto Weidt", yt: "Museum Blindenwerkstatt Otto Weidt" },
+  { id: "sverdrup", name: "Otto Sverdrup", years: "1854–1930", from: "Noruega", cat: "hist",
+    tag: "Capitão do navio que se deixou prender no gelo",
+    text: ["Navegador norueguês que comandou o navio Fram na expedição de Fridtjof Nansen, de 1893 a 1896. O barco ficou preso no gelo de propósito, para ser levado pela corrente na direção do Polo Norte.", "Depois liderou a própria expedição e mapeou ilhas no Ártico canadense."],
+    fact: "Um grupo dessas ilhas leva o nome dele: as Ilhas Sverdrup.",
+    wiki: "Otto Sverdrup", yt: "Fram ship Nansen expedition" },
+  { id: "schmidt", name: "Otto Schmidt", years: "1891–1956", from: "União Soviética", cat: "hist",
+    tag: "O cientista que acampou sobre o mar congelado",
+    text: ["Matemático e explorador soviético que liderou expedições no Ártico.", "Em 1934, o navio Tcheliúskin, da expedição que ele chefiava, afundou esmagado pelo gelo. Mais de cem pessoas viveram semanas acampadas sobre o mar congelado até serem resgatadas por aviões."],
+    fact: "Ele também foi o primeiro editor-chefe da Grande Enciclopédia Soviética.",
+    wiki: "Otto Schmidt", yt: "Chelyuskin 1934 rescue" },
+
+  { id: "dix", name: "Otto Dix", years: "1891–1969", from: "Alemanha", cat: "arte",
+    tag: "Pintou a guerra como ela foi",
+    text: ["Pintor alemão que lutou na Primeira Guerra Mundial e depois retratou sem filtro os horrores do front e a vida em Berlim nos anos 1920.", "Os nazistas classificaram a obra dele como arte degenerada e o afastaram do cargo de professor."],
+    fact: "Um dos quadros mais conhecidos dele é o retrato da jornalista Sylvia von Harden, de 1926.",
+    wiki: "Otto Dix", yt: "Otto Dix pintor" },
+  { id: "otto-wagner", name: "Otto Wagner", years: "1841–1918", from: "Áustria", cat: "arte",
+    tag: "O arquiteto que modernizou Viena",
+    text: ["Arquiteto austríaco que trocou a decoração exagerada por formas mais limpas e materiais novos.", "Projetou as estações do antigo trem urbano de Viena, a Caixa Econômica Postal e a Igreja de Steinhof, com sua cúpula dourada."],
+    fact: "Os pavilhões da estação Karlsplatz, com ferragens verdes e flores douradas, são dele e viraram cartão-postal de Viena.",
+    wiki: "Otto Wagner", yt: "Otto Wagner Vienna architecture" },
+  { id: "mueller", name: "Otto Mueller", years: "1874–1930", from: "Alemanha", cat: "arte",
+    tag: "Pintor do grupo A Ponte",
+    text: ["Pintor expressionista alemão que fez parte do grupo Die Brücke, A Ponte.", "Pintava figuras em paisagens, com cores suaves e contornos simples."],
+    fact: "Ele usava tinta à base de cola sobre tecido grosso, o que deixava os quadros com acabamento fosco.",
+    wiki: "Otto Mueller", yt: "Otto Mueller Die Brücke" },
+  { id: "aicher", name: "Otto Aicher", years: "1922–1991", from: "Alemanha", cat: "arte",
+    tag: "Desenhou os bonequinhos das Olimpíadas de 1972",
+    text: ["Designer gráfico alemão que criou a identidade visual dos Jogos Olímpicos de Munique, em 1972, com pictogramas de esportes desenhados só com linhas retas e diagonais.", "Também fez a identidade da Lufthansa, desenhou a fonte Rotis e ajudou a fundar a Escola de Design de Ulm."],
+    fact: "Ele era casado com Inge Scholl, irmã de Sophie e Hans Scholl, jovens que resistiram ao nazismo no grupo Rosa Branca.",
+    wiki: "Otl Aicher", yt: "Otl Aicher Munich 1972 pictograms" },
+  { id: "eckmann", name: "Otto Eckmann", years: "1865–1902", from: "Alemanha", cat: "arte",
+    tag: "O pintor que virou desenhista de letras",
+    text: ["Artista do Jugendstil, a versão alemã da art nouveau. Em 1894 leiloou seus quadros, largou a pintura e passou a desenhar livros, objetos e tipografia.", "A fonte Eckmann, de 1900, com letras que lembram plantas, ficou famosa no mundo todo."],
+    fact: "Ele morreu aos 36 anos, pouco depois de lançar a fonte.",
+    wiki: "Otto Eckmann", yt: "Eckmann typeface Jugendstil" },
+  { id: "piene", name: "Otto Piene", years: "1928–2014", from: "Alemanha e EUA", cat: "arte",
+    tag: "Fez arte com luz, fumaça e balões",
+    text: ["Artista alemão que fundou o grupo ZERO em 1957, com Heinz Mack. Criou balés de luz com lâmpadas e placas perfuradas e grandes esculturas infláveis que flutuavam no céu, que ele chamava de Sky Art.", "Mais tarde dirigiu um centro de artes visuais no MIT, nos Estados Unidos."],
+    fact: "No encerramento das Olimpíadas de Munique de 1972, ele estendeu no céu um arco-íris inflável gigante. As mesmas Olimpíadas dos pictogramas de Otto Aicher.",
+    wiki: "Otto Piene", yt: "Otto Piene light ballet" },
+  { id: "neurath", name: "Otto Neurath", years: "1882–1945", from: "Áustria", cat: "arte",
+    tag: "Inventou uma língua feita de figurinhas",
+    text: ["Filósofo e economista austríaco, membro do Círculo de Viena. Com Marie Reidemeister e o artista Gerd Arntz, criou o Isotype, um sistema de pictogramas para explicar números para qualquer pessoa.", "É considerado um avô dos infográficos atuais."],
+    fact: "Ele comparava o conhecimento a um barco que precisa ser consertado em alto-mar, tábua por tábua, sem nunca voltar ao porto. A imagem ficou conhecida como barco de Neurath.",
+    wiki: "Otto Neurath", yt: "Isotype Otto Neurath Gerd Arntz" },
+  { id: "messmer", name: "Otto Messmer", years: "1892–1983", from: "EUA", cat: "arte",
+    tag: "O animador por trás do Gato Félix",
+    text: ["Animador americano que criou o Gato Félix em 1919, no estúdio de Pat Sullivan, que levou o crédito por décadas.", "Félix foi um dos primeiros astros do desenho animado, anos antes do Mickey."],
+    fact: "Um boneco do Gato Félix foi uma das primeiras imagens transmitidas em testes de televisão, em 1928.",
+    wiki: "Otto Messmer", yt: "Otto Messmer Felix the Cat history" },
+  { id: "soglow", name: "Otto Soglow", years: "1900–1975", from: "EUA", cat: "arte",
+    tag: "O cartunista do Reizinho",
+    text: ["Cartunista americano que criou The Little King, o Reizinho, publicado a partir dos anos 1930 na revista The New Yorker e depois em jornais.", "O rei baixinho e barbudo quase nunca falava: as piadas eram contadas só com desenhos."],
+    fact: "Tiras sem falas, como a dele, são chamadas de tiras de pantomima.",
+    wiki: "Otto Soglow", yt: "The Little King cartoon Otto Soglow" },
+  { id: "stupakoff", name: "Otto Stupakoff", years: "1935–2009", from: "Brasil (SP)", cat: "arte", br: true,
+    tag: "Pioneiro da fotografia de moda no Brasil",
+    text: ["Fotógrafo paulistano que levou a fotografia de moda brasileira para outro nível nos anos 1950 e 1960.", "Depois trabalhou nos Estados Unidos e na Europa para grandes revistas de moda."],
+    fact: "O acervo dele foi doado ao Instituto Moreira Salles.",
+    wiki: "Otto Stupakoff", yt: "Otto Stupakoff fotógrafo" },
+
+  { id: "klemperer", name: "Otto Klemperer", years: "1885–1973", from: "Alemanha", cat: "musi",
+    tag: "Um dos grandes maestros do século 20",
+    text: ["Maestro alemão, protegido de Gustav Mahler, que dirigiu a ousada Ópera Kroll, em Berlim. Por ser judeu, deixou a Alemanha em 1933.", "No fim da vida, à frente da Orquestra Philharmonia de Londres, gravou interpretações monumentais de Beethoven e Brahms."],
+    fact: "O filho dele, Werner Klemperer, fez o atrapalhado coronel Klink na série de TV Guerra, Sombra e Água Fresca.",
+    wiki: "Otto Klemperer", yt: "Otto Klemperer Beethoven" },
+  { id: "nicolai", name: "Otto Nicolai", years: "1810–1849", from: "Alemanha", cat: "musi",
+    tag: "Fundou os concertos da Filarmônica de Viena",
+    text: ["Compositor e maestro alemão que, em 1842, organizou em Viena os primeiros concertos dos músicos da ópera, a origem da Orquestra Filarmônica de Viena.", "Compôs a ópera cômica As Alegres Comadres de Windsor, baseada em Shakespeare."],
+    fact: "Ele morreu dois meses depois da estreia dessa ópera, aos 38 anos.",
+    wiki: "Otto Nicolai", yt: "Otto Nicolai Merry Wives of Windsor overture" },
+  { id: "otto-cantor", name: "Otto", years: "1968–", from: "Brasil (PE)", cat: "musi", br: true,
+    tag: "Do manguebeat para o Brasil",
+    text: ["Cantor e compositor pernambucano, nascido em Belo Jardim. Foi percussionista do Mundo Livre S/A, uma das bandas do manguebeat, e seguiu carreira solo misturando samba, eletrônica e rock.", "Discos como Samba pra Burro (1998) e Certa Manhã Acordei de Sonhos Intranquilos (2009) estão entre os mais elogiados da música brasileira recente."],
+    fact: "O título do disco de 2009 vem da primeira frase de A Metamorfose, de Franz Kafka.",
+    wiki: "Otto (cantor)", yt: "Otto cantor Certa Manhã Acordei de Sonhos Intranquilos" },
+  { id: "harbach", name: "Otto Harbach", years: "1873–1963", from: "EUA", cat: "musi",
+    tag: "O letrista que ensinou Oscar Hammerstein",
+    text: ["Letrista americano da era de ouro dos musicais da Broadway.", "Escreveu a letra de Smoke Gets in Your Eyes, com música de Jerome Kern, uma das canções mais regravadas do século 20."],
+    fact: "Ele foi mentor de Oscar Hammerstein II, que depois escreveria A Noviça Rebelde com Richard Rodgers.",
+    wiki: "Otto Harbach", yt: "Smoke Gets in Your Eyes Jerome Kern" },
+  { id: "luening", name: "Otto Luening", years: "1900–1996", from: "EUA", cat: "musi",
+    tag: "Pioneiro da música eletrônica",
+    text: ["Compositor e flautista americano que, com Vladimir Ussachevsky, criou algumas das primeiras músicas feitas com gravadores de fita nos Estados Unidos, nos anos 1950.", "Os dois ajudaram a fundar o Centro de Música Eletrônica Columbia-Princeton."],
+    fact: "Em Fantasy in Space, de 1952, ele gravou a própria flauta e transformou o som acelerando, desacelerando e ecoando a fita.",
+    wiki: "Otto Luening", yt: "Otto Luening Fantasy in Space" },
+
+  { id: "lara-resende", name: "Otto Lara Resende", years: "1922–1992", from: "Brasil (MG)", cat: "letr", br: true,
+    tag: "O mineiro que foi parar no título de uma peça",
+    text: ["Escritor e jornalista nascido em São João del-Rei, famoso pela conversa brilhante e pelas frases certeiras.", "Escreveu contos e crônicas e foi eleito para a Academia Brasileira de Letras em 1979."],
+    fact: "O amigo Nelson Rodrigues colocou o nome dele no título da peça Bonitinha, mas Ordinária, de 1962.",
+    wiki: "Otto Lara Resende", yt: "Otto Lara Resende entrevista" },
+  { id: "carpeaux", name: "Otto Maria Carpeaux", years: "1900–1978", from: "Áustria e Brasil", cat: "letr", br: true,
+    tag: "O austríaco que virou crítico brasileiro",
+    text: ["Nascido em Viena, fugiu do nazismo e chegou ao Brasil em 1939 sem falar português. Aprendeu a língua e se tornou um dos maiores críticos literários do país.", "Sua História da Literatura Ocidental vai de Homero ao século 20."],
+    fact: "O nome de nascimento dele era Otto Karpfen. Carpeaux foi o sobrenome que adotou.",
+    wiki: "Otto Maria Carpeaux", yt: "Otto Maria Carpeaux" },
+  { id: "jespersen", name: "Otto Jespersen", years: "1860–1943", from: "Dinamarca", cat: "letr",
+    tag: "O linguista que inventou uma língua",
+    text: ["Linguista dinamarquês, um dos maiores estudiosos da gramática do inglês e de como as línguas mudam com o tempo.", "Defendia que idiomas fossem ensinados pela conversa, e não pela decoreba de regras."],
+    fact: "Em 1928 ele criou o Novial, uma língua artificial para comunicação internacional, como o esperanto.",
+    wiki: "Otto Jespersen", yt: "Novial language" },
+  { id: "rank", name: "Otto Rank", years: "1884–1939", from: "Áustria", cat: "letr",
+    tag: "Estudou o duplo, o nosso reflexo",
+    text: ["Psicanalista austríaco, um dos colaboradores mais próximos de Freud por cerca de 20 anos.", "Escreveu sobre criatividade e sobre os mitos dos heróis, e depois rompeu com Freud para seguir ideias próprias."],
+    fact: "Ele escreveu um estudo sobre o duplo, o sósia ou reflexo que aparece em histórias e lendas. Bem apropriado para alguém chamado Otto: em letras maiúsculas, o nome aparece igual no espelho.",
+    wiki: "Otto Rank", yt: "Otto Rank psicanálise" },
+
+  { id: "rehhagel", name: "Otto Rehhagel", years: "1938–", from: "Alemanha", cat: "espo",
+    tag: "Levou a Grécia ao título da Eurocopa",
+    text: ["Técnico alemão que comandou a seleção da Grécia no título da Eurocopa de 2004, uma das maiores zebras da história do futebol.", "Na Alemanha, foi campeão com o Werder Bremen e com o Kaiserslautern."],
+    fact: "Com o Kaiserslautern, ganhou o Campeonato Alemão de 1998 no primeiro ano depois de o time subir da segunda divisão. Os gregos o apelidaram de Rehhakles.",
+    wiki: "Otto Rehhagel", yt: "Grécia campeã Euro 2004" },
+  { id: "gloria", name: "Otto Glória", years: "1917–1986", from: "Brasil (RJ)", cat: "espo", br: true,
+    tag: "O técnico brasileiro que brilhou em Portugal",
+    text: ["Técnico carioca que fez carreira longa em Portugal, onde treinou Benfica e Sporting.", "Comandou a seleção portuguesa de Eusébio no terceiro lugar da Copa do Mundo de 1966."],
+    fact: "Aquela era a primeira Copa do Mundo da história de Portugal.",
+    wiki: "Otto Glória", yt: "Portugal Copa 1966 Eusébio" },
+  { id: "graham", name: "Otto Graham", years: "1921–2003", from: "EUA", cat: "espo",
+    tag: "Dez finais em dez temporadas",
+    text: ["Quarterback do Cleveland Browns de 1946 a 1955. Em todas as dez temporadas que jogou, levou o time à final do campeonato e venceu sete delas.", "É um recorde de regularidade no futebol americano."],
+    fact: "Antes disso, também foi campeão no basquete profissional, pelo Rochester Royals, em 1946.",
+    wiki: "Otto Graham", yt: "Otto Graham Cleveland Browns" },
+  { id: "porter", name: "Otto Porter Jr.", years: "1993–", from: "EUA", cat: "espo",
+    tag: "Campeão da NBA",
+    text: ["Jogador de basquete americano escolhido na terceira posição do draft da NBA de 2013, pelo Washington Wizards.", "Ala com bom arremesso de longa distância, foi campeão da NBA em 2022 com o Golden State Warriors."],
+    fact: "Antes da NBA, jogou pela Universidade de Georgetown.",
+    wiki: "Otto Porter Jr.", yt: "Otto Porter Jr highlights" },
+  { id: "addo", name: "Otto Addo", years: "1975–", from: "Alemanha e Gana", cat: "espo",
+    tag: "De jogador a técnico de Gana",
+    text: ["Nascido em Hamburgo, filho de pais ganeses, jogou pelo Borussia Dortmund e defendeu a seleção de Gana na Copa do Mundo de 2006.", "Como técnico, comandou Gana na Copa do Mundo de 2022, no Catar."],
+    fact: "A Copa de 2006 foi a primeira de Gana, disputada justamente na Alemanha, o país onde ele nasceu.",
+    wiki: "Otto Addo", yt: "Otto Addo Ghana" },
+
+  { id: "preminger", name: "Otto Preminger", years: "1905–1986", from: "Áustria e EUA", cat: "tela",
+    tag: "Diretor de clássicos de Hollywood",
+    text: ["Diretor austríaco que fez carreira em Hollywood com filmes como Laura (1944), O Homem do Braço de Ouro (1955) e Anatomia de um Crime (1959).", "Enfrentou a censura da época e ajudou a acabar com a lista negra de roteiristas ao dar crédito a Dalton Trumbo em Exodus."],
+    fact: "Ele também era ator e fez o vilão Sr. Frio na série de TV do Batman dos anos 1960.",
+    wiki: "Otto Preminger", yt: "Otto Preminger diretor" },
+  { id: "waalkes", name: "Otto Waalkes", years: "1948–", from: "Alemanha", cat: "tela",
+    tag: "O comediante mais famoso da Alemanha",
+    text: ["Comediante, cantor e desenhista da Frísia Oriental, no norte da Alemanha. Os shows dele e o filme Otto – Der Film (1985) fizeram enorme sucesso.", "Também criou os Ottifanten, elefantinhos de desenho."],
+    fact: "Na versão alemã de A Era do Gelo, é ele quem faz a voz do preguiça Sid.",
+    wiki: "Otto Waalkes", yt: "Otto Waalkes" },
+  { id: "sander", name: "Otto Sander", years: "1941–2013", from: "Alemanha", cat: "tela",
+    tag: "O anjo de Berlim",
+    text: ["Ator alemão de teatro e cinema.", "Fez o anjo Cassiel em Asas do Desejo (1987), de Wim Wenders, e um oficial do submarino em O Barco (1981)."],
+    fact: "Em Asas do Desejo, os anjos só enxergam em preto e branco. Quando um deles vira humano, o filme ganha cor.",
+    wiki: "Otto Sander", yt: "Asas do Desejo Wim Wenders" },
+  { id: "otto-guerra", name: "Otto Guerra", years: "1956–", from: "Brasil (RS)", cat: "tela", br: true,
+    tag: "Um dos grandes nomes da animação brasileira",
+    text: ["Animador e diretor de Porto Alegre, à frente de um dos estúdios de animação mais antigos do país.", "Dirigiu longas como Wood & Stock (2006) e Até que a Sbórnia nos Separe (2013)."],
+    fact: "O estúdio dele se chama Otto Desenhos Animados.",
+    wiki: "Otto Guerra", yt: "Até que a Sbórnia nos Separe trailer" },
+
+  { id: "otto-mann", name: "Otto Mann", years: "desde 1990", from: "Springfield", cat: "ficc",
+    tag: "O motorista do ônibus escolar",
+    text: ["Motorista do ônibus escolar de Springfield em Os Simpsons.", "Fã de heavy metal, distraído e sempre de fone de ouvido, é um dos poucos adultos que tratam o Bart como amigo."],
+    fact: "Na versão original em inglês, a voz é do ator Harry Shearer, que também dubla o Sr. Burns e o Ned Flanders.",
+    wiki: "Otto Mann", yt: "Otto Mann Simpsons" },
+  { id: "piloto-automatico", name: "Otto, o piloto automático", years: "1980", from: "cinema", cat: "ficc",
+    tag: "O boneco inflável que pilota avião",
+    text: ["Na comédia Apertem os Cintos... O Piloto Sumiu! (1980), o avião é controlado por um piloto automático em forma de boneco inflável chamado Otto.", "Ele infla na cabine quando é ligado e aparece em algumas das cenas mais absurdas do filme."],
+    fact: "Em inglês, o nome Otto lembra auto, de autopilot, piloto automático.",
+    wiki: "Airplane!", yt: "Airplane 1980 Otto autopilot" },
+  { id: "octavius", name: "Otto Octavius", years: "desde 1963", from: "quadrinhos", cat: "ficc",
+    tag: "O cientista que virou Doutor Octopus",
+    text: ["Cientista dos quadrinhos do Homem-Aranha que, depois de um acidente, ficou com quatro braços mecânicos presos ao corpo e virou o vilão Doutor Octopus.", "Foi criado por Stan Lee e Steve Ditko em 1963."],
+    fact: "No cinema, foi interpretado por Alfred Molina em Homem-Aranha 2 (2004), papel que ele repetiu anos depois.",
+    wiki: "Doutor Octopus", yt: "Doctor Octopus Spider-Man 2" },
+  { id: "otto-rocket", name: "Otto Rocket", years: "1999–2004", from: "desenho animado", cat: "ficc",
+    tag: "O radical de Rocket Power",
+    text: ["Protagonista do desenho Rocket Power, da Nickelodeon.", "Otto vive numa cidade praiana da Califórnia e passa o dia surfando e andando de skate e de patins com a irmã Reggie e os amigos."],
+    fact: "Otto é apelido. O nome completo dele é Oswald Rocket.",
+    wiki: "Rocket Power", yt: "Rocket Power abertura" },
+  { id: "otto-anderson", name: "Otto Anderson", years: "2022", from: "cinema", cat: "ficc",
+    tag: "O vizinho rabugento de Tom Hanks",
+    text: ["Personagem do filme O Pior Vizinho do Mundo (2022), vivido por Tom Hanks. Viúvo e mal-humorado, Otto vê a rotina virar de cabeça para baixo quando uma família se muda para a casa da frente.", "A história vem do romance sueco Um Homem Chamado Ove, de Fredrik Backman."],
+    fact: "Truman Hanks, filho de Tom Hanks, interpreta o Otto jovem.",
+    wiki: "A Man Called Otto", yt: "O Pior Vizinho do Mundo trailer" },
+  { id: "otto-cao", name: "Otto, o cão do Sargento", years: "quadrinhos", from: "Recruta Zero", cat: "ficc",
+    tag: "O buldogue do Recruta Zero",
+    text: ["Nos quadrinhos do Recruta Zero, de Mort Walker, Otto é o buldogue do Sargento Tainha.", "Com o tempo, passou a andar em duas patas e a usar uniforme, igualzinho ao dono."],
+    fact: "O nome original da tira, em inglês, é Beetle Bailey.",
+    wiki: "Recruta Zero", yt: "Recruta Zero desenho" },
+  { id: "otto-orange", name: "Otto the Orange", years: "mascote", from: "EUA", cat: "ficc",
+    tag: "A laranja que torce pela universidade",
+    text: ["Mascote da Universidade de Syracuse, nos Estados Unidos: uma laranja gigante e sorridente que anima os jogos de basquete e de futebol americano.", "A cor oficial da universidade é o laranja."],
+    fact: "Os times esportivos da universidade se chamam Syracuse Orange.",
+    wiki: "Syracuse Orange", yt: "Otto the Orange Syracuse mascot" },
+
+  { id: "palindromo", name: "OTTO ⇄ OTTO", years: "curiosidade", from: "o próprio nome", cat: "curi",
+    tag: "Se lê igual de trás para a frente",
+    text: ["Otto é um palíndromo: lido de trás para a frente, continua Otto.", "E tem mais: O e T são letras simétricas, então OTTO, em maiúsculas, também aparece igual quando visto num espelho."],
+    fact: "O poeta austríaco Ernst Jandl escreveu ottos mops, um poema famoso que usa só a vogal o.",
+    wiki: "Palíndromo", yt: "palíndromos para crianças" },
+  { id: "otto-numero", name: "Otto, o número", years: "curiosidade", from: "Itália", cat: "curi",
+    tag: "Em italiano, otto quer dizer oito",
+    text: ["Em italiano, otto é o número 8.", "Quem se chama Otto na Itália tem nome de número, e o 8, assim como o nome, é simétrico."],
+    fact: "O filme 8½, de Federico Fellini, se chama Otto e mezzo em italiano: oito e meio.",
+    wiki: "8½", yt: "números em italiano" },
+  { id: "normalverbraucher", name: "Otto Normalverbraucher", years: "expressão alemã", from: "Alemanha", cat: "curi",
+    tag: "O João da Silva dos alemães",
+    text: ["Na Alemanha, quando querem falar de uma pessoa comum, qualquer uma, dizem Otto Normalverbraucher, algo como Otto, o consumidor normal.", "É o equivalente ao nosso João da Silva ou Zé Ninguém."],
+    fact: "A expressão vem do personagem do filme Berliner Ballade (1948), vivido por Gert Fröbe, que depois fez o vilão Goldfinger em 007.",
+    wiki: "Gert Fröbe", yt: "Otto Normalverbraucher Berliner Ballade" },
+  { id: "nome-otto", name: "O nome Otto", years: "germânico antigo", from: "Europa", cat: "curi",
+    tag: "Um nome que significa riqueza",
+    text: ["Otto vem do germânico antigo, de uma raiz que quer dizer riqueza, prosperidade ou boa sorte.", "Foi tão usado por reis e imperadores na Idade Média que uma dinastia inteira, a otoniana, leva esse nome."],
+    fact: "Odo, nome comum na França medieval, tem a mesma origem.",
+    wiki: "Dinastia otoniana", yt: "dinastia otoniana" }
+];
+
+/* ---------- Emblems: mirror-symmetric O/T compositions seeded by id ---------- */
+function seeded(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  let a = h >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function tint(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const m = (c) => Math.round(c + (255 - c) * amt);
+  return `rgb(${m(r)},${m(g)},${m(b)})`;
+}
+function pickWeighted(r, list) {
+  let x = r(), acc = 0;
+  for (const [v, w] of list) { acc += w; if (x < acc) return v; }
+  return list[list.length - 1][0];
+}
+function drawEmblem(cv, o) {
+  const ctx = cv.getContext("2d");
+  const W = cv.width, col = CATS[o.cat].color;
+  ctx.clearRect(0, 0, W, W);
+  ctx.fillStyle = col; ctx.fillRect(0, 0, W, W);
+  const N = 6, pad = W * 0.09, cs = (W - pad * 2) / N;
+  const r = seeded(o.id);
+  const colors = ["#FFFFFF", "#14161B", tint(col, 0.55)];
+  const shapes = [["empty", .2], ["ring", .22], ["dot", .13], ["T", .19], ["half", .16], ["square", .10]];
+  const flip = { l: "r", r: "l", t: "t", b: "b" };
+  for (let row = 0; row < N; row++) {
+    for (let c = 0; c < N / 2; c++) {
+      const s = pickWeighted(r, shapes);
+      const color = pickWeighted(r, [[0, .45], [1, .32], [2, .23]]);
+      const dir = ["l", "r", "t", "b"][Math.floor(r() * 4)];
+      cell(ctx, pad + c * cs, pad + row * cs, cs, s, colors[color], dir);
+      cell(ctx, pad + (N - 1 - c) * cs, pad + row * cs, cs, s, colors[color], flip[dir]);
+    }
+  }
+}
+function cell(ctx, x, y, s, shape, color, dir) {
+  const cx = x + s / 2, cy = y + s / 2;
+  ctx.fillStyle = color; ctx.strokeStyle = color;
+  ctx.beginPath();
+  if (shape === "ring") {
+    ctx.lineWidth = s * 0.17;
+    ctx.arc(cx, cy, s * 0.33, 0, Math.PI * 2); ctx.stroke();
+  } else if (shape === "dot") {
+    ctx.arc(cx, cy, s * 0.2, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === "T") {
+    ctx.rect(x + s * 0.12, y + s * 0.14, s * 0.76, s * 0.19);
+    ctx.rect(x + s * 0.405, y + s * 0.14, s * 0.19, s * 0.72);
+    ctx.fill();
+  } else if (shape === "half") {
+    const R = s * 0.42;
+    const a = { l: [Math.PI / 2, Math.PI * 1.5], r: [-Math.PI / 2, Math.PI / 2], t: [Math.PI, Math.PI * 2], b: [0, Math.PI] }[dir];
+    ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, a[0], a[1]); ctx.closePath(); ctx.fill();
+  } else if (shape === "square") {
+    ctx.rect(x + s * 0.2, y + s * 0.2, s * 0.6, s * 0.6); ctx.fill();
+  }
+}
+
+/* ---------- UI ---------- */
+const $ = (id) => document.getElementById(id);
+const grid = $("grid"), chips = $("chips"), statusEl = $("status");
+const state = { q: "", cat: "all", br: false };
+const cards = new Map();
+const norm = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+OTTOS.forEach((o) => { o._hay = norm([o.name, o.tag, o.from, o.years, CATS[o.cat].label, o.text.join(" "), o.fact].join(" ")); });
+
+$("total-ottos").textContent = OTTOS.length;
+
+function buildChips() {
+  const counts = {};
+  OTTOS.forEach((o) => { counts[o.cat] = (counts[o.cat] || 0) + 1; });
+  const items = [["all", "Todos", null, OTTOS.length]].concat(
+    Object.entries(CATS).map(([k, c]) => [k, c.label, c.color, counts[k] || 0])
+  );
+  chips.innerHTML = "";
+  items.forEach(([k, label, color, n]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.dataset.cat = k;
+    b.setAttribute("aria-pressed", String(state.cat === k));
+    b.innerHTML = (color ? `<span class="dot" style="background:${color}"></span>` : "") +
+      `<span>${label}</span><span class="n">${n}</span>`;
+    b.addEventListener("click", () => { state.cat = k; save(); apply(); });
+    chips.appendChild(b);
+  });
+}
+
+function buildGrid() {
+  OTTOS.forEach((o) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "card"; b.dataset.id = o.id;
+    b.setAttribute("aria-label", `${o.name}: ${o.tag}`);
+    const cv = document.createElement("canvas");
+    cv.width = 360; cv.height = 360; cv.setAttribute("aria-hidden", "true");
+    drawEmblem(cv, o);
+    b.appendChild(cv);
+    const badges = [];
+    if (o.br) badges.push('<span class="badge br">Brasil</span>');
+    if (o.cat === "ficc") badges.push('<span class="badge">Ficção</span>');
+    b.insertAdjacentHTML("beforeend",
+      `<span class="c-name">${o.name}</span>` +
+      `<span class="c-meta">${o.years}</span>` +
+      `<span class="c-tag">${o.tag}</span>` +
+      (badges.length ? `<span class="badges">${badges.join("")}</span>` : ""));
+    b.addEventListener("click", () => openOtto(o.id));
+    grid.appendChild(b);
+    cards.set(o.id, b);
+  });
+}
+
+function visible() {
+  const q = norm(state.q.trim());
+  return OTTOS.filter((o) =>
+    (state.cat === "all" || o.cat === state.cat) &&
+    (!state.br || o.br) &&
+    (!q || o._hay.includes(q)));
+}
+
+function apply() {
+  const list = visible();
+  const ids = new Set(list.map((o) => o.id));
+  cards.forEach((el, id) => { el.hidden = !ids.has(id); });
+  chips.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.cat === state.cat)));
+  $("so-brasil").setAttribute("aria-pressed", String(state.br));
+  const n = list.length;
+  statusEl.textContent = n === OTTOS.length ? `${n} Ottos` : `${n} de ${OTTOS.length} Ottos`;
+  $("empty").hidden = n > 0;
+  if (!n) $("empty-msg").textContent = state.q ? `Nenhum Otto encontrado para “${state.q}”.` : "Nenhum Otto com esses filtros.";
+}
+
+function save() {
+  try { localStorage.setItem("ottos-filtros", JSON.stringify({ cat: state.cat, br: state.br })); } catch (e) {}
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem("ottos-filtros") || "null");
+    if (s && (s.cat === "all" || CATS[s.cat])) { state.cat = s.cat; state.br = !!s.br; }
+  } catch (e) {}
+}
+
+$("busca").addEventListener("input", (e) => { state.q = e.target.value; apply(); });
+$("so-brasil").addEventListener("click", () => { state.br = !state.br; save(); apply(); });
+$("limpar").addEventListener("click", () => {
+  state.q = ""; state.cat = "all"; state.br = false; $("busca").value = ""; save(); apply();
+});
+$("aleatorio").addEventListener("click", () => {
+  const list = visible().length ? visible() : OTTOS;
+  const cur = location.hash.slice(1);
+  let pick;
+  do { pick = list[Math.floor(Math.random() * list.length)]; } while (list.length > 1 && pick.id === cur);
+  openOtto(pick.id);
+});
+
+/* ---------- Detail sheet ---------- */
+const overlay = $("overlay");
+let lastFocus = null, currentId = null;
+
+function openOtto(id) {
+  if (location.hash.slice(1) === id) render(id);
+  else location.hash = id;
+}
+function closeOtto() {
+  if (location.hash) location.hash = "";
+  else hideSheet();
+}
+function navList() {
+  const list = visible();
+  return list.some((o) => o.id === currentId) ? list : OTTOS;
+}
+function step(d) {
+  const list = navList();
+  const i = list.findIndex((o) => o.id === currentId);
+  const next = list[(i + d + list.length) % list.length];
+  openOtto(next.id);
+}
+
+function render(id) {
+  const o = OTTOS.find((x) => x.id === id);
+  if (!o) { hideSheet(); return; }
+  const wasHidden = overlay.hidden;
+  if (wasHidden) lastFocus = document.activeElement;
+  currentId = id;
+  const cat = CATS[o.cat];
+  const media = $("p-media");
+  media.innerHTML = "";
+  if (o.img) {
+    const im = document.createElement("img"); im.src = o.img; im.alt = o.name; im.loading = "lazy";
+    im.referrerPolicy = "no-referrer";
+    im.addEventListener("error", () => { media.innerHTML = ""; const cv = document.createElement("canvas");
+      cv.width = 440; cv.height = 440; drawEmblem(cv, o); media.appendChild(cv); });
+    media.appendChild(im);
+    if (o.credit) {
+      const cr = document.createElement("p"); cr.className = "p-credit";
+      if (o.source) { const a = document.createElement("a"); a.href = o.source; a.target = "_blank"; a.rel = "noopener"; a.textContent = o.credit; cr.appendChild(a); }
+      else cr.textContent = o.credit;
+      media.appendChild(cr);
+    }
+  } else {
+    const cv = document.createElement("canvas"); cv.width = 440; cv.height = 440;
+    cv.setAttribute("role", "img"); cv.setAttribute("aria-label", `Emblema de ${o.name}`);
+    drawEmblem(cv, o); media.appendChild(cv);
+  }
+  $("p-dot").style.background = cat.color;
+  $("p-cat").textContent = cat.label;
+  $("p-name").textContent = o.name;
+  $("p-meta").textContent = [o.years, o.from].filter(Boolean).join(" · ") + (o.cat === "ficc" ? " · personagem" : "") + (o.br ? " · do Brasil" : "");
+  $("p-tag").textContent = o.tag;
+  $("p-text").innerHTML = o.text.map((t) => `<p>${t}</p>`).join("");
+  $("p-fact").textContent = o.fact;
+  $("p-fact-box").style.setProperty("--fact", cat.color);
+  const vbox = $("p-video"), yid = youtubeId(o.video);
+  vbox.innerHTML = "";
+  if (yid) {
+    const fr = document.createElement("iframe");
+    fr.src = `https://www.youtube-nocookie.com/embed/${yid}`;
+    fr.title = `Vídeo sobre ${o.name}`; fr.loading = "lazy"; fr.allowFullscreen = true;
+    fr.allow = "accelerometer; encrypted-media; gyroscope; picture-in-picture";
+    vbox.appendChild(fr);
+  }
+  vbox.hidden = !yid;
+  const links = [];
+  if (o.video) links.push(`<a class="primary" href="${o.video}" target="_blank" rel="noopener">Assistir ao vídeo</a>`);
+  if (o.wiki) links.push(`<a ${o.video ? "" : 'class="primary"'} href="https://pt.wikipedia.org/w/index.php?search=${encodeURIComponent(o.wiki)}" target="_blank" rel="noopener">Ler na Wikipédia</a>`);
+  if (o.site) links.push(`<a ${o.wiki || o.video ? "" : 'class="primary"'} href="${o.site}" target="_blank" rel="noopener">Site oficial</a>`);
+  if (!o.video) links.push(`<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(o.yt || o.name)}" target="_blank" rel="noopener">Procurar vídeos</a>`);
+  $("p-links").innerHTML = links.join("");
+  const list = navList();
+  $("p-count").textContent = `${list.findIndex((x) => x.id === id) + 1} de ${list.length}`;
+  $("sheet-body").scrollTop = 0;
+  if (wasHidden) {
+    overlay.hidden = false;
+    document.documentElement.style.overflow = "hidden";
+    $("fechar").focus();
+  }
+}
+function youtubeId(url) {
+  if (!url) return null;
+  const m = String(url).match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function hideSheet() {
+  if (overlay.hidden) return;
+  overlay.hidden = true;
+  $("p-video").innerHTML = "";
+  document.documentElement.style.overflow = "";
+  const card = currentId && cards.get(currentId);
+  currentId = null;
+  (card && !card.hidden ? card : lastFocus)?.focus?.();
+}
+function route() {
+  const id = location.hash.slice(1);
+  if (id && OTTOS.some((o) => o.id === id)) render(id);
+  else hideSheet();
+}
+
+$("fechar").addEventListener("click", closeOtto);
+$("scrim").addEventListener("click", closeOtto);
+$("anterior").addEventListener("click", () => step(-1));
+$("proximo").addEventListener("click", () => step(1));
+document.addEventListener("keydown", (e) => {
+  if (overlay.hidden) return;
+  if (e.key === "Escape") closeOtto();
+  else if (e.key === "ArrowRight") step(1);
+  else if (e.key === "ArrowLeft") step(-1);
+  else if (e.key === "Tab") {
+    const f = overlay.querySelectorAll("button, a[href]");
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+window.addEventListener("hashchange", route);
+
+load();
+buildChips();
+buildGrid();
+apply();
+route();
+</script>
+</body>
+</html>

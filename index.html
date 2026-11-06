@@ -139,7 +139,11 @@ main { padding-block: 28px 56px; }
   border-radius: 6px; margin-bottom: 8px;
   transition: transform .18s ease;
 }
-.card:hover canvas { transform: translateY(-3px) rotate(-1deg); }
+.card .thumb {
+  width: 100%; max-width: 100%; aspect-ratio: 1; display: block; object-fit: cover; object-position: 50% 22%;
+  border-radius: 6px; margin-bottom: 8px; background: var(--chip); transition: transform .18s ease;
+}
+.card:hover canvas, .card:hover .thumb { transform: translateY(-3px) rotate(-1deg); }
 .c-name { font-family: var(--f-display); font-weight: 700; font-size: 14.5px; line-height: 1.2; text-wrap: balance; }
 .c-meta { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
 .c-tag { font-size: 14px; line-height: 1.4; color: var(--muted); }
@@ -191,7 +195,7 @@ footer p { margin: 0; font-size: 14px; color: var(--muted); max-width: 70ch; }
 }
 .p-head { display: grid; grid-template-columns: 168px 1fr; gap: 20px; align-items: end; }
 .p-head canvas { width: 100%; aspect-ratio: 1; border-radius: 8px; display: block; }
-.p-head img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; display: block; }
+.p-head img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: 50% 22%; border-radius: 8px; display: block; background: var(--chip); }
 .p-id { min-width: 0; display: grid; gap: 6px; }
 .p-cat {
   margin: 0; display: flex; gap: 8px; align-items: center;
@@ -253,8 +257,8 @@ footer p { margin: 0; font-size: 14px; color: var(--muted); max-width: 70ch; }
 @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .sheet { animation: none; }
-  .card canvas { transition: none; }
-  .card:hover canvas { transform: none; }
+  .card canvas, .card .thumb { transition: none; }
+  .card:hover canvas, .card:hover .thumb { transform: none; }
 }
 </style>
 
@@ -351,6 +355,7 @@ const CATS = {
    source -> link to the photo's page (e.g. the Wikimedia Commons file page).
    video  -> a YouTube link (watch?v=, youtu.be/ or shorts/). It is embedded on the detail page.
    site   -> official website link.
+   wikiUrl -> direct link for the "read more" button (otherwise it searches Portuguese Wikipedia for `wiki`).
    br     -> true for Brazilian Ottos.
 
    Example:
@@ -366,72 +371,100 @@ const OTTOS = [
     tag: "O químico que descobriu a fissão nuclear",
     text: ["Químico alemão que passou décadas estudando elementos radioativos. Em dezembro de 1938, com Fritz Strassmann, percebeu que o urânio atingido por nêutrons se partia em átomos menores. Era a fissão nuclear.", "Recebeu o Prêmio Nobel de Química de 1944."],
     fact: "A física Lise Meitner, parceira de pesquisa dele por cerca de 30 anos, foi quem ajudou a explicar o que eles tinham visto. Muita gente acha que ela também merecia o Nobel.",
-    wiki: "Otto Hahn", yt: "Otto Hahn fissão nuclear" },
+    wiki: "Otto Hahn", yt: "Otto Hahn fissão nuclear",
+    img: "https://upload.wikimedia.org/wikipedia/commons/9/9b/Otto_Hahn_(Nobel).jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Hahn_(Nobel).jpg" },
   { id: "lilienthal", name: "Otto Lilienthal", years: "1848–1896", from: "Alemanha", cat: "cien",
     tag: "O rei dos planadores",
     text: ["Engenheiro alemão e um dos primeiros humanos a voar de verdade. Construiu planadores com estrutura de salgueiro e asas de tecido e fez mais de 2 mil voos, saltando de uma colina artificial perto de Berlim.", "Morreu em 1896, um dia depois de cair durante um voo."],
     fact: "Os irmãos Wright estudaram as tabelas de sustentação publicadas por Lilienthal antes de construir o próprio avião.",
-    wiki: "Otto Lilienthal", yt: "Otto Lilienthal planador voo" },
+    wiki: "Otto Lilienthal", yt: "Otto Lilienthal planador voo",
+    img: "https://upload.wikimedia.org/wikipedia/commons/8/81/Otto-lilienthal.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto-lilienthal.jpg" },
   { id: "nikolaus-otto", name: "Nikolaus August Otto", years: "1832–1891", from: "Alemanha", cat: "cien",
     tag: "Otto no sobrenome, e dentro de quase todo carro",
     text: ["Comerciante que viajava vendendo mercadorias e aprendeu engenharia por conta própria. Em 1876 construiu o primeiro motor de quatro tempos que funcionou bem: admissão, compressão, explosão e escape.", "Esse funcionamento ganhou o nome de ciclo Otto e é o princípio do motor a gasolina até hoje."],
     fact: "No Brasil, carros a álcool e flex também funcionam pelo ciclo Otto.",
-    wiki: "Ciclo de Otto", yt: "ciclo Otto motor quatro tempos animação" },
+    wiki: "Ciclo de Otto", yt: "ciclo Otto motor quatro tempos animação",
+    img: "https://upload.wikimedia.org/wikipedia/commons/4/4a/Nikolaus_August_Otto.png",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Nikolaus_August_Otto.png" },
   { id: "warburg", name: "Otto Warburg", years: "1883–1970", from: "Alemanha", cat: "cien",
     tag: "Estudou como as células respiram",
     text: ["Bioquímico alemão que ganhou o Nobel de Medicina de 1931 por descobrir como funciona uma enzima da respiração celular.", "Também observou que células de tumor usam açúcar de um jeito diferente das células normais. O fenômeno, chamado efeito Warburg, é estudado até hoje na pesquisa sobre câncer."],
     fact: "Hans Krebs, que trabalhou como assistente no laboratório de Warburg, ganhou o próprio Nobel em 1953.",
-    wiki: "Otto Heinrich Warburg", yt: "Otto Warburg efeito Warburg" },
+    wiki: "Otto Heinrich Warburg", yt: "Otto Warburg efeito Warburg",
+    img: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Otto_Warburg.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Warburg.jpg" },
   { id: "stern", name: "Otto Stern", years: "1888–1969", from: "Alemanha e EUA", cat: "cien",
     tag: "Mostrou que o mundo dos átomos funciona aos saltos",
     text: ["Físico alemão que, em 1922, fez com Walther Gerlach um experimento com um feixe de átomos de prata passando por um ímã. Em vez de se espalhar, o feixe se dividiu em dois.", "Foi uma das primeiras provas de que certas propriedades dos átomos só assumem valores específicos. Stern ganhou o Nobel de Física de 1943."],
     fact: "Conta-se que a marca da prata na placa só ficou visível por causa da fumaça do charuto barato de Stern, que escureceu o metal.",
-    wiki: "Experimento de Stern-Gerlach", yt: "Stern Gerlach experiment" },
+    wiki: "Experimento de Stern-Gerlach", yt: "Stern Gerlach experiment",
+    img: "https://upload.wikimedia.org/wikipedia/commons/8/88/Otto_Stern.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Stern.jpg" },
   { id: "loewi", name: "Otto Loewi", years: "1873–1961", from: "Alemanha e Áustria", cat: "cien",
     tag: "A descoberta que veio num sonho",
     text: ["Farmacologista que provou que os nervos conversam com os órgãos usando substâncias químicas, os neurotransmissores. Fez isso com dois corações de rã: o líquido de um coração estimulado mudava o ritmo do outro.", "Dividiu o Nobel de Medicina de 1936 com Henry Dale."],
     fact: "A ideia do experimento apareceu num sonho. Loewi anotou de madrugada, não entendeu a própria letra de manhã, sonhou de novo na noite seguinte e dessa vez foi direto para o laboratório.",
-    wiki: "Otto Loewi", yt: "Otto Loewi experimento coração de rã" },
+    wiki: "Otto Loewi", yt: "Otto Loewi experimento coração de rã",
+    img: "https://upload.wikimedia.org/wikipedia/commons/9/99/Otto_Loewi_nobel.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Loewi_nobel.jpg" },
   { id: "diels", name: "Otto Diels", years: "1876–1954", from: "Alemanha", cat: "cien",
     tag: "Uma reação química com nome e sobrenome",
     text: ["Químico alemão que, em 1928, descreveu com o aluno Kurt Alder uma forma elegante de juntar moléculas formando anéis de carbono.", "A reação de Diels-Alder é usada até hoje para fabricar remédios e plásticos e rendeu aos dois o Nobel de Química de 1950."],
     fact: "O pai dele, Hermann Diels, era um estudioso famoso dos filósofos da Grécia antiga.",
-    wiki: "Otto Diels", yt: "reação de Diels-Alder" },
+    wiki: "Otto Diels", yt: "reação de Diels-Alder",
+    img: "https://upload.wikimedia.org/wikipedia/commons/3/38/Otto_Paul_Hermann_Diels.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Paul_Hermann_Diels.jpg" },
   { id: "wallach", name: "Otto Wallach", years: "1847–1931", from: "Alemanha", cat: "cien",
     tag: "O químico dos cheiros",
     text: ["Químico alemão que organizou o estudo dos terpenos, substâncias que dão cheiro a plantas como pinho, limão e hortelã.", "O trabalho dele ajudou a indústria de perfumes e aromas a entender e reproduzir esses cheiros. Ganhou o Nobel de Química de 1910."],
     fact: "Grande parte da pesquisa foi feita com óleos essenciais, aqueles extraídos de cascas, folhas e flores.",
-    wiki: "Otto Wallach", yt: "Otto Wallach terpenos" },
+    wiki: "Otto Wallach", yt: "Otto Wallach terpenos",
+    img: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Otto_Wallach_1880s.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Wallach_1880s.jpg" },
   { id: "meyerhof", name: "Otto Meyerhof", years: "1884–1951", from: "Alemanha e EUA", cat: "cien",
     tag: "Explicou de onde vem a energia dos músculos",
     text: ["Bioquímico alemão que estudou como o músculo transforma açúcar em energia. Dividiu o Nobel de Medicina de 1922 com o britânico A. V. Hill, e parte do caminho que ele descreveu, a glicólise, também leva seu nome.", "Por ser judeu, teve de fugir da Alemanha nazista."],
     fact: "Em 1940 ele escapou da França atravessando os Pireneus a pé até a Espanha, com ajuda da rede de resgate do americano Varian Fry.",
-    wiki: "Otto Fritz Meyerhof", yt: "Otto Meyerhof glicólise" },
+    wiki: "Otto Fritz Meyerhof", yt: "Otto Meyerhof glicólise",
+    img: "https://upload.wikimedia.org/wikipedia/commons/0/05/Otto_Fritz_Meyerhof.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Fritz_Meyerhof.jpg" },
   { id: "guericke", name: "Otto von Guericke", years: "1602–1686", from: "Alemanha", cat: "cien",
     tag: "O homem que mostrou a força do vácuo",
     text: ["Cientista e prefeito de Magdeburgo. Inventou uma bomba de vácuo e fez uma demonstração famosa: juntou duas meias-esferas de metal, tirou o ar de dentro e nem duas parelhas de cavalos conseguiram separá-las.", "O experimento ficou conhecido como hemisférios de Magdeburgo."],
     fact: "Ele também construiu uma das primeiras máquinas de eletricidade estática, uma bola de enxofre que girava e era esfregada com a mão.",
-    wiki: "Hemisférios de Magdeburgo", yt: "Magdeburg hemispheres experiment" },
+    wiki: "Hemisférios de Magdeburgo", yt: "Magdeburg hemispheres experiment",
+    img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Anselmus-van-Hulle-Hommes-illustres_MG_0539.tif/lossy-page1-1920px-Anselmus-van-Hulle-Hommes-illustres_MG_0539.tif.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Anselmus-van-Hulle-Hommes-illustres_MG_0539.tif" },
   { id: "schott", name: "Otto Schott", years: "1851–1935", from: "Alemanha", cat: "cien",
     tag: "O vidro que aguenta o forno",
     text: ["Químico alemão especialista em vidro. Em Jena, fundou uma vidraria com Ernst Abbe e Carl Zeiss e criou vidros novos para lentes e microscópios.", "Também desenvolveu o vidro borossilicato, que resiste a mudanças bruscas de temperatura."],
     fact: "É o mesmo tipo de vidro de muita travessa que vai ao forno e de boa parte da vidraria de laboratório.",
-    wiki: "Otto Schott", yt: "vidro borossilicato como é feito" },
+    wiki: "Otto Schott", yt: "vidro borossilicato como é feito",
+    img: "https://upload.wikimedia.org/wikipedia/commons/0/08/Friedrich_Otto_Schott.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Friedrich_Otto_Schott.jpg" },
   { id: "otto-bayer", name: "Otto Bayer", years: "1902–1982", from: "Alemanha", cat: "cien",
     tag: "O inventor do poliuretano",
     text: ["Químico industrial alemão que, em 1937, criou o poliuretano, um plástico que pode virar espuma macia, espuma rígida, verniz ou borracha.", "Ele está em colchões, assentos de carro, solados de tênis e no isolamento de geladeiras."],
     fact: "Apesar do sobrenome, ele não era da família que fundou a empresa Bayer, embora tenha trabalhado lá.",
-    wiki: "Otto Bayer", yt: "poliuretano espuma como é feita" },
+    wiki: "Otto Bayer", yt: "poliuretano espuma como é feita",
+    img: "https://upload.wikimedia.org/wikipedia/commons/d/d8/1937_1952_Prof_Otto_Bayer_Polyurethan.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:1937_1952_Prof_Otto_Bayer_Polyurethan.jpg" },
   { id: "rohwedder", name: "Otto Rohwedder", years: "1880–1960", from: "EUA", cat: "cien",
     tag: "O inventor do pão fatiado",
     text: ["Joalheiro americano que passou anos desenvolvendo uma máquina capaz de fatiar e embalar pão.", "Em 7 de julho de 1928, uma padaria da cidade de Chillicothe, no Missouri, começou a vender o primeiro pão fatiado à máquina."],
     fact: "Em inglês, quando algo é genial, se diz que é a melhor coisa desde o pão fatiado. O primeiro protótipo de Rohwedder tinha sido destruído num incêndio em 1917.",
-    wiki: "Otto Frederick Rohwedder", yt: "Otto Rohwedder sliced bread history" },
+    wiki: "Otto Frederick Rohwedder", yt: "Otto Rohwedder sliced bread history",
+    img: "https://upload.wikimedia.org/wikipedia/commons/9/9b/St._Louis_electrical_bread_slicer,_1930.png",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:St._Louis_electrical_bread_slicer,_1930.png" },
   { id: "struve", name: "Otto Struve", years: "1897–1963", from: "Rússia e EUA", cat: "cien",
     tag: "Quarta geração de uma família de astrônomos",
     text: ["Astrônomo nascido no Império Russo que se mudou para os Estados Unidos e dirigiu o Observatório Yerkes.", "Estudou a rotação das estrelas e o gás que existe entre elas."],
     fact: "O bisavô, o avô e o pai dele também eram astrônomos. Os Struve são uma das grandes dinastias da astronomia.",
-    wiki: "Otto Struve", yt: "Yerkes Observatory history" },
+    wiki: "Otto Struve", yt: "Yerkes Observatory history",
+    img: "https://upload.wikimedia.org/wikipedia/commons/8/87/Struve_Otto.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Struve_Otto.jpg" },
   { id: "otto-diy", name: "Otto DIY", years: "robô de código aberto", from: "mundo todo", cat: "cien",
     tag: "Um robô que a gente mesmo monta",
     text: ["Otto é um pequeno robô de duas pernas, de código aberto, pensado para ensinar programação e eletrônica a crianças.", "As peças podem ser impressas em 3D, e ele anda, dança e desvia de obstáculos comandado por uma placa Arduino."],
@@ -442,198 +475,270 @@ const OTTOS = [
     tag: "O primeiro imperador do Sacro Império",
     text: ["Rei dos germânicos que derrotou os magiares na Batalha de Lechfeld, em 955, e foi coroado imperador em Roma pelo papa, em 962.", "Esse momento é considerado o começo do Sacro Império Romano-Germânico, que durou mais de 800 anos."],
     fact: "Ele foi sepultado na Catedral de Magdeburgo, a mesma cidade onde, séculos depois, Otto von Guericke faria o experimento dos hemisférios.",
-    wiki: "Otão I do Sacro Império Romano-Germânico", yt: "Otto I o Grande história" },
+    wiki: "Otão I do Sacro Império Romano-Germânico", yt: "Otto I o Grande história",
+    img: "https://upload.wikimedia.org/wikipedia/commons/8/82/Siegel_Otto_I_Posse.JPG",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Siegel_Otto_I_Posse.JPG" },
   { id: "otto-iii", name: "Otto III", years: "980–1002", from: "Sacro Império", cat: "hist",
     tag: "Rei aos três anos de idade",
     text: ["Filho de Otto II, virou rei em 983, com apenas três anos. No começo, quem governou foram a mãe, Teófano, e a avó, Adelaide.", "Foi coroado imperador aos 16 anos e sonhava em renovar o antigo Império Romano. Morreu jovem, aos 21."],
     fact: "Segundo os cronistas, no ano 1000 ele mandou abrir o túmulo de Carlos Magno, em Aachen.",
-    wiki: "Otão III do Sacro Império Romano-Germânico", yt: "Otto III emperor" },
+    wiki: "Otão III do Sacro Império Romano-Germânico", yt: "Otto III emperor",
+    img: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Clm_4453_fol_24r_Detail_Herrscherbild.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Clm_4453_fol_24r_Detail_Herrscherbild.jpg" },
   { id: "bismarck", name: "Otto von Bismarck", years: "1815–1898", from: "Prússia", cat: "hist",
     tag: "O chanceler que unificou a Alemanha",
     text: ["Político prussiano que comandou a unificação da Alemanha em 1871 e foi o primeiro chanceler do novo império, até 1890. Ficou conhecido como Chanceler de Ferro.", "Também criou alguns dos primeiros seguros sociais do mundo, como o seguro-saúde e a aposentadoria para trabalhadores."],
     fact: "A capital do estado americano de Dakota do Norte se chama Bismarck em homenagem a ele.",
-    wiki: "Otto von Bismarck", yt: "Bismarck unificação alemã" },
+    wiki: "Otto von Bismarck", yt: "Bismarck unificação alemã",
+    img: "https://upload.wikimedia.org/wikipedia/commons/5/59/Otto_von_Bismarck_1885_(cropped).jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_von_Bismarck_1885_(cropped).jpg" },
   { id: "otto-grecia", name: "Otto da Grécia", years: "1815–1867", from: "Baviera e Grécia", cat: "hist",
     tag: "O primeiro rei da Grécia moderna",
     text: ["Príncipe da Baviera escolhido pelas potências europeias para ser o primeiro rei da Grécia independente, em 1832, quando tinha 17 anos.", "Reinou por quase 30 anos, até ser deposto em 1862 e voltar para a Baviera."],
     fact: "Para se aproximar do povo, ele adotou a fustanela, a saia pregueada do traje tradicional grego.",
-    wiki: "Otão da Grécia", yt: "King Otto of Greece" },
+    wiki: "Otão da Grécia", yt: "King Otto of Greece",
+    img: "https://upload.wikimedia.org/wikipedia/commons/5/5d/Prinz_Otto_von_Bayern_Koenig_von_Griechenland_1833.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Prinz_Otto_von_Bayern_Koenig_von_Griechenland_1833.jpg" },
   { id: "habsburg", name: "Otto von Habsburg", years: "1912–2011", from: "Áustria", cat: "hist",
     tag: "O príncipe herdeiro que virou deputado europeu",
     text: ["Filho mais velho do último imperador da Áustria-Hungria, nasceu herdeiro de um império que acabou quando ele tinha seis anos.", "Passou a vida defendendo a união da Europa e foi deputado do Parlamento Europeu de 1979 a 1999."],
     fact: "Em 1989, a organização que ele presidia ajudou a promover o Piquenique Pan-Europeu, na fronteira da Áustria com a Hungria, por onde centenas de alemães do leste fugiram para o oeste.",
-    wiki: "Otto von Habsburg", yt: "Piquenique Pan-Europeu 1989" },
+    wiki: "Otto von Habsburg", yt: "Piquenique Pan-Europeu 1989",
+    img: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Otto_von_Habsburg,_MEP_(1912%E2%80%932011).jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_von_Habsburg,_MEP_(1912%E2%80%932011).jpg" },
   { id: "otto-frank", name: "Otto Frank", years: "1889–1980", from: "Alemanha e Países Baixos", cat: "hist",
     tag: "O pai que publicou o diário de Anne Frank",
     text: ["Empresário judeu alemão que se escondeu com a família por dois anos num anexo secreto em Amsterdã, durante a Segunda Guerra.", "Foi o único dos oito escondidos que sobreviveu aos campos de concentração. Depois da guerra, publicou o diário da filha, Anne."],
     fact: "O diário foi presente de aniversário de 13 anos de Anne. O esconderijo hoje é um museu, a Casa de Anne Frank.",
-    wiki: "Otto Frank", yt: "Casa de Anne Frank Otto Frank" },
+    wiki: "Otto Frank", yt: "Casa de Anne Frank Otto Frank",
+    img: "https://upload.wikimedia.org/wikipedia/commons/5/55/Otto_Frank_(1961).jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Frank_(1961).jpg" },
   { id: "weidt", name: "Otto Weidt", years: "1883–1947", from: "Alemanha", cat: "hist",
     tag: "Salvou funcionários na sua oficina de vassouras",
     text: ["Dono de uma oficina de vassouras e escovas em Berlim, Weidt, ele próprio quase cego, empregava trabalhadores judeus cegos e surdos durante o nazismo.", "Subornou policiais, falsificou papéis e escondeu funcionários para salvá-los. Foi reconhecido como Justo entre as Nações."],
     fact: "A antiga oficina, perto da praça Hackescher Markt, em Berlim, hoje é um museu.",
-    wiki: "Otto Weidt", yt: "Museum Blindenwerkstatt Otto Weidt" },
+    wiki: "Otto Weidt", yt: "Museum Blindenwerkstatt Otto Weidt",
+    img: "https://upload.wikimedia.org/wikipedia/commons/3/38/%D7%90%D7%95%D7%98%D7%95_%D7%95%D7%99%D7%99%D7%93%D7%98_%D7%AA%D7%9E%D7%95%D7%A0%D7%94_%D7%91%D7%9E%D7%95%D7%96%D7%99%D7%90%D7%95%D7%9F_(cropped).jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:%D7%90%D7%95%D7%98%D7%95_%D7%95%D7%99%D7%99%D7%93%D7%98_%D7%AA%D7%9E%D7%95%D7%A0%D7%94_%D7%91%D7%9E%D7%95%D7%96%D7%99%D7%90%D7%95%D7%9F_(cropped).jpg" },
   { id: "sverdrup", name: "Otto Sverdrup", years: "1854–1930", from: "Noruega", cat: "hist",
     tag: "Capitão do navio que se deixou prender no gelo",
     text: ["Navegador norueguês que comandou o navio Fram na expedição de Fridtjof Nansen, de 1893 a 1896. O barco ficou preso no gelo de propósito, para ser levado pela corrente na direção do Polo Norte.", "Depois liderou a própria expedição e mapeou ilhas no Ártico canadense."],
     fact: "Um grupo dessas ilhas leva o nome dele: as Ilhas Sverdrup.",
-    wiki: "Otto Sverdrup", yt: "Fram ship Nansen expedition" },
+    wiki: "Otto Sverdrup", yt: "Fram ship Nansen expedition",
+    img: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Otto_Sverdrup.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Sverdrup.jpg" },
   { id: "schmidt", name: "Otto Schmidt", years: "1891–1956", from: "União Soviética", cat: "hist",
     tag: "O cientista que acampou sobre o mar congelado",
     text: ["Matemático e explorador soviético que liderou expedições no Ártico.", "Em 1934, o navio Tcheliúskin, da expedição que ele chefiava, afundou esmagado pelo gelo. Mais de cem pessoas viveram semanas acampadas sobre o mar congelado até serem resgatadas por aviões."],
     fact: "Ele também foi o primeiro editor-chefe da Grande Enciclopédia Soviética.",
-    wiki: "Otto Schmidt", yt: "Chelyuskin 1934 rescue" },
+    wiki: "Otto Schmidt", yt: "Chelyuskin 1934 rescue",
+    img: "https://upload.wikimedia.org/wikipedia/commons/9/96/Schmidt_OYu.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Schmidt_OYu.jpg" },
 
   { id: "dix", name: "Otto Dix", years: "1891–1969", from: "Alemanha", cat: "arte",
     tag: "Pintou a guerra como ela foi",
     text: ["Pintor alemão que lutou na Primeira Guerra Mundial e depois retratou sem filtro os horrores do front e a vida em Berlim nos anos 1920.", "Os nazistas classificaram a obra dele como arte degenerada e o afastaram do cargo de professor."],
     fact: "Um dos quadros mais conhecidos dele é o retrato da jornalista Sylvia von Harden, de 1926.",
-    wiki: "Otto Dix", yt: "Otto Dix pintor" },
+    wiki: "Otto Dix", yt: "Otto Dix pintor",
+    img: "https://upload.wikimedia.org/wikipedia/commons/9/90/Otto_Dix,_May_1955,_by_Hans-Joachim_Koch_(2).jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Dix,_May_1955,_by_Hans-Joachim_Koch_(2).jpg" },
   { id: "otto-wagner", name: "Otto Wagner", years: "1841–1918", from: "Áustria", cat: "arte",
     tag: "O arquiteto que modernizou Viena",
     text: ["Arquiteto austríaco que trocou a decoração exagerada por formas mais limpas e materiais novos.", "Projetou as estações do antigo trem urbano de Viena, a Caixa Econômica Postal e a Igreja de Steinhof, com sua cúpula dourada."],
     fact: "Os pavilhões da estação Karlsplatz, com ferragens verdes e flores douradas, são dele e viraram cartão-postal de Viena.",
-    wiki: "Otto Wagner", yt: "Otto Wagner Vienna architecture" },
+    wiki: "Otto Wagner", yt: "Otto Wagner Vienna architecture",
+    img: "https://upload.wikimedia.org/wikipedia/commons/3/31/Otto_Wagner_photo2_retouched.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Wagner_photo2_retouched.jpg" },
   { id: "mueller", name: "Otto Mueller", years: "1874–1930", from: "Alemanha", cat: "arte",
     tag: "Pintor do grupo A Ponte",
     text: ["Pintor expressionista alemão que fez parte do grupo Die Brücke, A Ponte.", "Pintava figuras em paisagens, com cores suaves e contornos simples."],
     fact: "Ele usava tinta à base de cola sobre tecido grosso, o que deixava os quadros com acabamento fosco.",
-    wiki: "Otto Mueller", yt: "Otto Mueller Die Brücke" },
+    wiki: "Otto Mueller", yt: "Otto Mueller Die Brücke",
+    img: "https://upload.wikimedia.org/wikipedia/commons/6/65/Otto_Mueller_-_Self-Portrait.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Mueller_-_Self-Portrait.jpg" },
   { id: "aicher", name: "Otto Aicher", years: "1922–1991", from: "Alemanha", cat: "arte",
     tag: "Desenhou os bonequinhos das Olimpíadas de 1972",
     text: ["Designer gráfico alemão que criou a identidade visual dos Jogos Olímpicos de Munique, em 1972, com pictogramas de esportes desenhados só com linhas retas e diagonais.", "Também fez a identidade da Lufthansa, desenhou a fonte Rotis e ajudou a fundar a Escola de Design de Ulm."],
     fact: "Ele era casado com Inge Scholl, irmã de Sophie e Hans Scholl, jovens que resistiram ao nazismo no grupo Rosa Branca.",
-    wiki: "Otl Aicher", yt: "Otl Aicher Munich 1972 pictograms" },
+    wiki: "Otl Aicher", yt: "Otl Aicher Munich 1972 pictograms",
+    img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Otl_Aicher%2C_1959.tif/lossy-page1-1280px-Otl_Aicher%2C_1959.tif.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otl_Aicher,_1959.tif" },
   { id: "eckmann", name: "Otto Eckmann", years: "1865–1902", from: "Alemanha", cat: "arte",
     tag: "O pintor que virou desenhista de letras",
     text: ["Artista do Jugendstil, a versão alemã da art nouveau. Em 1894 leiloou seus quadros, largou a pintura e passou a desenhar livros, objetos e tipografia.", "A fonte Eckmann, de 1900, com letras que lembram plantas, ficou famosa no mundo todo."],
     fact: "Ele morreu aos 36 anos, pouco depois de lançar a fonte.",
-    wiki: "Otto Eckmann", yt: "Eckmann typeface Jugendstil" },
+    wiki: "Otto Eckmann", yt: "Eckmann typeface Jugendstil",
+    img: "https://upload.wikimedia.org/wikipedia/commons/0/00/Otto_eckmann.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_eckmann.jpg" },
   { id: "piene", name: "Otto Piene", years: "1928–2014", from: "Alemanha e EUA", cat: "arte",
     tag: "Fez arte com luz, fumaça e balões",
     text: ["Artista alemão que fundou o grupo ZERO em 1957, com Heinz Mack. Criou balés de luz com lâmpadas e placas perfuradas e grandes esculturas infláveis que flutuavam no céu, que ele chamava de Sky Art.", "Mais tarde dirigiu um centro de artes visuais no MIT, nos Estados Unidos."],
     fact: "No encerramento das Olimpíadas de Munique de 1972, ele estendeu no céu um arco-íris inflável gigante. As mesmas Olimpíadas dos pictogramas de Otto Aicher.",
-    wiki: "Otto Piene", yt: "Otto Piene light ballet" },
+    wiki: "Otto Piene", yt: "Otto Piene light ballet",
+    img: "https://upload.wikimedia.org/wikipedia/commons/f/fe/Otto_Piene_2007.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Piene_2007.jpg" },
   { id: "neurath", name: "Otto Neurath", years: "1882–1945", from: "Áustria", cat: "arte",
     tag: "Inventou uma língua feita de figurinhas",
     text: ["Filósofo e economista austríaco, membro do Círculo de Viena. Com Marie Reidemeister e o artista Gerd Arntz, criou o Isotype, um sistema de pictogramas para explicar números para qualquer pessoa.", "É considerado um avô dos infográficos atuais."],
     fact: "Ele comparava o conhecimento a um barco que precisa ser consertado em alto-mar, tábua por tábua, sem nunca voltar ao porto. A imagem ficou conhecida como barco de Neurath.",
-    wiki: "Otto Neurath", yt: "Isotype Otto Neurath Gerd Arntz" },
+    wiki: "Otto Neurath", yt: "Isotype Otto Neurath Gerd Arntz",
+    img: "https://upload.wikimedia.org/wikipedia/commons/9/9e/Otto_Neurath.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Neurath.jpg" },
   { id: "messmer", name: "Otto Messmer", years: "1892–1983", from: "EUA", cat: "arte",
     tag: "O animador por trás do Gato Félix",
     text: ["Animador americano que criou o Gato Félix em 1919, no estúdio de Pat Sullivan, que levou o crédito por décadas.", "Félix foi um dos primeiros astros do desenho animado, anos antes do Mickey."],
     fact: "Um boneco do Gato Félix foi uma das primeiras imagens transmitidas em testes de televisão, em 1928.",
-    wiki: "Otto Messmer", yt: "Otto Messmer Felix the Cat history" },
+    wiki: "Otto Messmer", yt: "Otto Messmer Felix the Cat history",
+    img: "https://upload.wikimedia.org/wikipedia/commons/4/4c/Otto_Messmer_and_Pat_Sullivan_c._1920s.png",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Messmer_and_Pat_Sullivan_c._1920s.png" },
   { id: "soglow", name: "Otto Soglow", years: "1900–1975", from: "EUA", cat: "arte",
     tag: "O cartunista do Reizinho",
     text: ["Cartunista americano que criou The Little King, o Reizinho, publicado a partir dos anos 1930 na revista The New Yorker e depois em jornais.", "O rei baixinho e barbudo quase nunca falava: as piadas eram contadas só com desenhos."],
     fact: "Tiras sem falas, como a dele, são chamadas de tiras de pantomima.",
-    wiki: "Otto Soglow", yt: "The Little King cartoon Otto Soglow" },
+    wiki: "Otto Soglow", yt: "The Little King cartoon Otto Soglow",
+    wikiUrl: "https://en.wikipedia.org/wiki/Otto_Soglow" },
   { id: "stupakoff", name: "Otto Stupakoff", years: "1935–2009", from: "Brasil (SP)", cat: "arte", br: true,
     tag: "Pioneiro da fotografia de moda no Brasil",
     text: ["Fotógrafo paulistano que levou a fotografia de moda brasileira para outro nível nos anos 1950 e 1960.", "Depois trabalhou nos Estados Unidos e na Europa para grandes revistas de moda."],
     fact: "O acervo dele foi doado ao Instituto Moreira Salles.",
-    wiki: "Otto Stupakoff", yt: "Otto Stupakoff fotógrafo" },
+    wiki: "Otto Stupakoff", yt: "Otto Stupakoff fotógrafo",
+    wikiUrl: "https://pt.wikipedia.org/wiki/Otto_Stupakoff" },
 
   { id: "klemperer", name: "Otto Klemperer", years: "1885–1973", from: "Alemanha", cat: "musi",
     tag: "Um dos grandes maestros do século 20",
     text: ["Maestro alemão, protegido de Gustav Mahler, que dirigiu a ousada Ópera Kroll, em Berlim. Por ser judeu, deixou a Alemanha em 1933.", "No fim da vida, à frente da Orquestra Philharmonia de Londres, gravou interpretações monumentais de Beethoven e Brahms."],
     fact: "O filho dele, Werner Klemperer, fez o atrapalhado coronel Klink na série de TV Guerra, Sombra e Água Fresca.",
-    wiki: "Otto Klemperer", yt: "Otto Klemperer Beethoven" },
+    wiki: "Otto Klemperer", yt: "Otto Klemperer Beethoven",
+    img: "https://upload.wikimedia.org/wikipedia/commons/9/92/C_1920_Otto_Klemperer.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:C_1920_Otto_Klemperer.jpg" },
   { id: "nicolai", name: "Otto Nicolai", years: "1810–1849", from: "Alemanha", cat: "musi",
     tag: "Fundou os concertos da Filarmônica de Viena",
     text: ["Compositor e maestro alemão que, em 1842, organizou em Viena os primeiros concertos dos músicos da ópera, a origem da Orquestra Filarmônica de Viena.", "Compôs a ópera cômica As Alegres Comadres de Windsor, baseada em Shakespeare."],
     fact: "Ele morreu dois meses depois da estreia dessa ópera, aos 38 anos.",
-    wiki: "Otto Nicolai", yt: "Otto Nicolai Merry Wives of Windsor overture" },
+    wiki: "Otto Nicolai", yt: "Otto Nicolai Merry Wives of Windsor overture",
+    img: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Otto_Nicolai.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Nicolai.jpg" },
   { id: "otto-cantor", name: "Otto", years: "1968–", from: "Brasil (PE)", cat: "musi", br: true,
     tag: "Do manguebeat para o Brasil",
     text: ["Cantor e compositor pernambucano, nascido em Belo Jardim. Foi percussionista do Mundo Livre S/A, uma das bandas do manguebeat, e seguiu carreira solo misturando samba, eletrônica e rock.", "Discos como Samba pra Burro (1998) e Certa Manhã Acordei de Sonhos Intranquilos (2009) estão entre os mais elogiados da música brasileira recente."],
     fact: "O título do disco de 2009 vem da primeira frase de A Metamorfose, de Franz Kafka.",
-    wiki: "Otto (cantor)", yt: "Otto cantor Certa Manhã Acordei de Sonhos Intranquilos" },
+    wiki: "Otto (cantor)", yt: "Otto cantor Certa Manhã Acordei de Sonhos Intranquilos",
+    img: "https://upload.wikimedia.org/wikipedia/commons/5/55/Virada_Cultural_-_Otto_(m%C3%BAsica)_31-05-15_(137)_(18168143479).jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Virada_Cultural_-_Otto_(m%C3%BAsica)_31-05-15_(137)_(18168143479).jpg" },
   { id: "harbach", name: "Otto Harbach", years: "1873–1963", from: "EUA", cat: "musi",
     tag: "O letrista que ensinou Oscar Hammerstein",
     text: ["Letrista americano da era de ouro dos musicais da Broadway.", "Escreveu a letra de Smoke Gets in Your Eyes, com música de Jerome Kern, uma das canções mais regravadas do século 20."],
     fact: "Ele foi mentor de Oscar Hammerstein II, que depois escreveria A Noviça Rebelde com Richard Rodgers.",
-    wiki: "Otto Harbach", yt: "Smoke Gets in Your Eyes Jerome Kern" },
+    wiki: "Otto Harbach", yt: "Smoke Gets in Your Eyes Jerome Kern",
+    img: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Otto_Harbach.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Harbach.jpg" },
   { id: "luening", name: "Otto Luening", years: "1900–1996", from: "EUA", cat: "musi",
     tag: "Pioneiro da música eletrônica",
     text: ["Compositor e flautista americano que, com Vladimir Ussachevsky, criou algumas das primeiras músicas feitas com gravadores de fita nos Estados Unidos, nos anos 1950.", "Os dois ajudaram a fundar o Centro de Música Eletrônica Columbia-Princeton."],
     fact: "Em Fantasy in Space, de 1952, ele gravou a própria flauta e transformou o som acelerando, desacelerando e ecoando a fita.",
-    wiki: "Otto Luening", yt: "Otto Luening Fantasy in Space" },
+    wiki: "Otto Luening", yt: "Otto Luening Fantasy in Space",
+    wikiUrl: "https://en.wikipedia.org/wiki/Otto_Luening" },
 
   { id: "lara-resende", name: "Otto Lara Resende", years: "1922–1992", from: "Brasil (MG)", cat: "letr", br: true,
     tag: "O mineiro que foi parar no título de uma peça",
     text: ["Escritor e jornalista nascido em São João del-Rei, famoso pela conversa brilhante e pelas frases certeiras.", "Escreveu contos e crônicas e foi eleito para a Academia Brasileira de Letras em 1979."],
     fact: "O amigo Nelson Rodrigues colocou o nome dele no título da peça Bonitinha, mas Ordinária, de 1962.",
-    wiki: "Otto Lara Resende", yt: "Otto Lara Resende entrevista" },
+    wiki: "Otto Lara Resende", yt: "Otto Lara Resende entrevista",
+    img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Otto_Lara_Resende_%281964%29.tif/lossy-page1-1920px-Otto_Lara_Resende_%281964%29.tif.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Lara_Resende_(1964).tif" },
   { id: "carpeaux", name: "Otto Maria Carpeaux", years: "1900–1978", from: "Áustria e Brasil", cat: "letr", br: true,
     tag: "O austríaco que virou crítico brasileiro",
     text: ["Nascido em Viena, fugiu do nazismo e chegou ao Brasil em 1939 sem falar português. Aprendeu a língua e se tornou um dos maiores críticos literários do país.", "Sua História da Literatura Ocidental vai de Homero ao século 20."],
     fact: "O nome de nascimento dele era Otto Karpfen. Carpeaux foi o sobrenome que adotou.",
-    wiki: "Otto Maria Carpeaux", yt: "Otto Maria Carpeaux" },
+    wiki: "Otto Maria Carpeaux", yt: "Otto Maria Carpeaux",
+    img: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Otto-Maria-Carpeaux-Karpfen.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto-Maria-Carpeaux-Karpfen.jpg" },
   { id: "jespersen", name: "Otto Jespersen", years: "1860–1943", from: "Dinamarca", cat: "letr",
     tag: "O linguista que inventou uma língua",
     text: ["Linguista dinamarquês, um dos maiores estudiosos da gramática do inglês e de como as línguas mudam com o tempo.", "Defendia que idiomas fossem ensinados pela conversa, e não pela decoreba de regras."],
     fact: "Em 1928 ele criou o Novial, uma língua artificial para comunicação internacional, como o esperanto.",
-    wiki: "Otto Jespersen", yt: "Novial language" },
+    wiki: "Otto Jespersen", yt: "Novial language",
+    img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/Otto_Jespersen_1919_21.jpg/3840px-Otto_Jespersen_1919_21.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Jespersen_1919_21.jpg" },
   { id: "rank", name: "Otto Rank", years: "1884–1939", from: "Áustria", cat: "letr",
     tag: "Estudou o duplo, o nosso reflexo",
     text: ["Psicanalista austríaco, um dos colaboradores mais próximos de Freud por cerca de 20 anos.", "Escreveu sobre criatividade e sobre os mitos dos heróis, e depois rompeu com Freud para seguir ideias próprias."],
     fact: "Ele escreveu um estudo sobre o duplo, o sósia ou reflexo que aparece em histórias e lendas. Bem apropriado para alguém chamado Otto: em letras maiúsculas, o nome aparece igual no espelho.",
-    wiki: "Otto Rank", yt: "Otto Rank psicanálise" },
+    wiki: "Otto Rank", yt: "Otto Rank psicanálise",
+    img: "https://upload.wikimedia.org/wikipedia/commons/2/2d/Otto_Rank_obituary_photo.png",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Rank_obituary_photo.png" },
 
   { id: "rehhagel", name: "Otto Rehhagel", years: "1938–", from: "Alemanha", cat: "espo",
     tag: "Levou a Grécia ao título da Eurocopa",
     text: ["Técnico alemão que comandou a seleção da Grécia no título da Eurocopa de 2004, uma das maiores zebras da história do futebol.", "Na Alemanha, foi campeão com o Werder Bremen e com o Kaiserslautern."],
     fact: "Com o Kaiserslautern, ganhou o Campeonato Alemão de 1998 no primeiro ano depois de o time subir da segunda divisão. Os gregos o apelidaram de Rehhakles.",
-    wiki: "Otto Rehhagel", yt: "Grécia campeã Euro 2004" },
+    wiki: "Otto Rehhagel", yt: "Grécia campeã Euro 2004",
+    img: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Otto_Rehhagel_01-2.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Rehhagel_01-2.jpg" },
   { id: "gloria", name: "Otto Glória", years: "1917–1986", from: "Brasil (RJ)", cat: "espo", br: true,
     tag: "O técnico brasileiro que brilhou em Portugal",
     text: ["Técnico carioca que fez carreira longa em Portugal, onde treinou Benfica e Sporting.", "Comandou a seleção portuguesa de Eusébio no terceiro lugar da Copa do Mundo de 1966."],
     fact: "Aquela era a primeira Copa do Mundo da história de Portugal.",
-    wiki: "Otto Glória", yt: "Portugal Copa 1966 Eusébio" },
+    wiki: "Otto Glória", yt: "Portugal Copa 1966 Eusébio",
+    img: "https://upload.wikimedia.org/wikipedia/commons/8/84/Otto_Gloria.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Gloria.jpg" },
   { id: "graham", name: "Otto Graham", years: "1921–2003", from: "EUA", cat: "espo",
     tag: "Dez finais em dez temporadas",
     text: ["Quarterback do Cleveland Browns de 1946 a 1955. Em todas as dez temporadas que jogou, levou o time à final do campeonato e venceu sete delas.", "É um recorde de regularidade no futebol americano."],
     fact: "Antes disso, também foi campeão no basquete profissional, pelo Rochester Royals, em 1946.",
-    wiki: "Otto Graham", yt: "Otto Graham Cleveland Browns" },
+    wiki: "Otto Graham", yt: "Otto Graham Cleveland Browns",
+    img: "https://upload.wikimedia.org/wikipedia/commons/f/fc/A_photo_of_Otto_Graham.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:A_photo_of_Otto_Graham.jpg" },
   { id: "porter", name: "Otto Porter Jr.", years: "1993–", from: "EUA", cat: "espo",
     tag: "Campeão da NBA",
     text: ["Jogador de basquete americano escolhido na terceira posição do draft da NBA de 2013, pelo Washington Wizards.", "Ala com bom arremesso de longa distância, foi campeão da NBA em 2022 com o Golden State Warriors."],
     fact: "Antes da NBA, jogou pela Universidade de Georgetown.",
-    wiki: "Otto Porter Jr.", yt: "Otto Porter Jr highlights" },
+    wiki: "Otto Porter Jr.", yt: "Otto Porter Jr highlights",
+    img: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Otto_Porter_Jr._spins_ball_on_finger_(50595920922).jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Porter_Jr._spins_ball_on_finger_(50595920922).jpg" },
   { id: "addo", name: "Otto Addo", years: "1975–", from: "Alemanha e Gana", cat: "espo",
     tag: "De jogador a técnico de Gana",
     text: ["Nascido em Hamburgo, filho de pais ganeses, jogou pelo Borussia Dortmund e defendeu a seleção de Gana na Copa do Mundo de 2006.", "Como técnico, comandou Gana na Copa do Mundo de 2022, no Catar."],
     fact: "A Copa de 2006 foi a primeira de Gana, disputada justamente na Alemanha, o país onde ele nasceu.",
-    wiki: "Otto Addo", yt: "Otto Addo Ghana" },
+    wiki: "Otto Addo", yt: "Otto Addo Ghana",
+    img: "https://upload.wikimedia.org/wikipedia/commons/5/52/Otto_Addo_%E2%80%93_Tag_der_Legenden_2016_02.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Addo_%E2%80%93_Tag_der_Legenden_2016_02.jpg" },
 
   { id: "preminger", name: "Otto Preminger", years: "1905–1986", from: "Áustria e EUA", cat: "tela",
     tag: "Diretor de clássicos de Hollywood",
     text: ["Diretor austríaco que fez carreira em Hollywood com filmes como Laura (1944), O Homem do Braço de Ouro (1955) e Anatomia de um Crime (1959).", "Enfrentou a censura da época e ajudou a acabar com a lista negra de roteiristas ao dar crédito a Dalton Trumbo em Exodus."],
     fact: "Ele também era ator e fez o vilão Sr. Frio na série de TV do Batman dos anos 1960.",
-    wiki: "Otto Preminger", yt: "Otto Preminger diretor" },
+    wiki: "Otto Preminger", yt: "Otto Preminger diretor",
+    img: "https://upload.wikimedia.org/wikipedia/commons/2/2d/Otto_Preminger_Allan_Warren.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Preminger_Allan_Warren.jpg" },
   { id: "waalkes", name: "Otto Waalkes", years: "1948–", from: "Alemanha", cat: "tela",
     tag: "O comediante mais famoso da Alemanha",
     text: ["Comediante, cantor e desenhista da Frísia Oriental, no norte da Alemanha. Os shows dele e o filme Otto – Der Film (1985) fizeram enorme sucesso.", "Também criou os Ottifanten, elefantinhos de desenho."],
     fact: "Na versão alemã de A Era do Gelo, é ele quem faz a voz do preguiça Sid.",
-    wiki: "Otto Waalkes", yt: "Otto Waalkes" },
+    wiki: "Otto Waalkes", yt: "Otto Waalkes",
+    img: "https://upload.wikimedia.org/wikipedia/commons/2/2c/Otto_-_Werner_Rennen_2018_05.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_-_Werner_Rennen_2018_05.jpg" },
   { id: "sander", name: "Otto Sander", years: "1941–2013", from: "Alemanha", cat: "tela",
     tag: "O anjo de Berlim",
     text: ["Ator alemão de teatro e cinema.", "Fez o anjo Cassiel em Asas do Desejo (1987), de Wim Wenders, e um oficial do submarino em O Barco (1981)."],
     fact: "Em Asas do Desejo, os anjos só enxergam em preto e branco. Quando um deles vira humano, o filme ganha cor.",
-    wiki: "Otto Sander", yt: "Asas do Desejo Wim Wenders" },
+    wiki: "Otto Sander", yt: "Asas do Desejo Wim Wenders",
+    img: "https://upload.wikimedia.org/wikipedia/commons/5/52/Otto_Sander_Berlinale_2008.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Sander_Berlinale_2008.jpg" },
   { id: "otto-guerra", name: "Otto Guerra", years: "1956–", from: "Brasil (RS)", cat: "tela", br: true,
     tag: "Um dos grandes nomes da animação brasileira",
     text: ["Animador e diretor de Porto Alegre, à frente de um dos estúdios de animação mais antigos do país.", "Dirigiu longas como Wood & Stock (2006) e Até que a Sbórnia nos Separe (2013)."],
     fact: "O estúdio dele se chama Otto Desenhos Animados.",
-    wiki: "Otto Guerra", yt: "Até que a Sbórnia nos Separe trailer" },
+    wiki: "Otto Guerra", yt: "Até que a Sbórnia nos Separe trailer",
+    img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Otto_Guerra.jpg/3840px-Otto_Guerra.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_Guerra.jpg" },
 
   { id: "otto-mann", name: "Otto Mann", years: "desde 1990", from: "Springfield", cat: "ficc",
     tag: "O motorista do ônibus escolar",
     text: ["Motorista do ônibus escolar de Springfield em Os Simpsons.", "Fã de heavy metal, distraído e sempre de fone de ouvido, é um dos poucos adultos que tratam o Bart como amigo."],
     fact: "Na versão original em inglês, a voz é do ator Harry Shearer, que também dubla o Sr. Burns e o Ned Flanders.",
-    wiki: "Otto Mann", yt: "Otto Mann Simpsons" },
+    wiki: "Otto Mann", yt: "Otto Mann Simpsons",
+    wikiUrl: "https://simpsonswiki.com/wiki/Otto_Mann" },
   { id: "piloto-automatico", name: "Otto, o piloto automático", years: "1980", from: "cinema", cat: "ficc",
     tag: "O boneco inflável que pilota avião",
     text: ["Na comédia Apertem os Cintos... O Piloto Sumiu! (1980), o avião é controlado por um piloto automático em forma de boneco inflável chamado Otto.", "Ele infla na cabine quando é ligado e aparece em algumas das cenas mais absurdas do filme."],
@@ -643,17 +748,20 @@ const OTTOS = [
     tag: "O cientista que virou Doutor Octopus",
     text: ["Cientista dos quadrinhos do Homem-Aranha que, depois de um acidente, ficou com quatro braços mecânicos presos ao corpo e virou o vilão Doutor Octopus.", "Foi criado por Stan Lee e Steve Ditko em 1963."],
     fact: "No cinema, foi interpretado por Alfred Molina em Homem-Aranha 2 (2004), papel que ele repetiu anos depois.",
-    wiki: "Doutor Octopus", yt: "Doctor Octopus Spider-Man 2" },
+    wiki: "Doutor Octopus", yt: "Doctor Octopus Spider-Man 2",
+    wikiUrl: "https://pt.wikipedia.org/wiki/Doutor_Octopus" },
   { id: "otto-rocket", name: "Otto Rocket", years: "1999–2004", from: "desenho animado", cat: "ficc",
     tag: "O radical de Rocket Power",
     text: ["Protagonista do desenho Rocket Power, da Nickelodeon.", "Otto vive numa cidade praiana da Califórnia e passa o dia surfando e andando de skate e de patins com a irmã Reggie e os amigos."],
     fact: "Otto é apelido. O nome completo dele é Oswald Rocket.",
-    wiki: "Rocket Power", yt: "Rocket Power abertura" },
+    wiki: "Rocket Power", yt: "Rocket Power abertura",
+    wikiUrl: "https://pt.wikipedia.org/wiki/Otto_Rocket" },
   { id: "otto-anderson", name: "Otto Anderson", years: "2022", from: "cinema", cat: "ficc",
     tag: "O vizinho rabugento de Tom Hanks",
     text: ["Personagem do filme O Pior Vizinho do Mundo (2022), vivido por Tom Hanks. Viúvo e mal-humorado, Otto vê a rotina virar de cabeça para baixo quando uma família se muda para a casa da frente.", "A história vem do romance sueco Um Homem Chamado Ove, de Fredrik Backman."],
     fact: "Truman Hanks, filho de Tom Hanks, interpreta o Otto jovem.",
-    wiki: "A Man Called Otto", yt: "O Pior Vizinho do Mundo trailer" },
+    wiki: "A Man Called Otto", yt: "O Pior Vizinho do Mundo trailer",
+    wikiUrl: "https://pt.wikipedia.org/wiki/A_Man_Called_Otto" },
   { id: "otto-cao", name: "Otto, o cão do Sargento", years: "quadrinhos", from: "Recruta Zero", cat: "ficc",
     tag: "O buldogue do Recruta Zero",
     text: ["Nos quadrinhos do Recruta Zero, de Mort Walker, Otto é o buldogue do Sargento Tainha.", "Com o tempo, passou a andar em duas patas e a usar uniforme, igualzinho ao dono."],
@@ -663,7 +771,9 @@ const OTTOS = [
     tag: "A laranja que torce pela universidade",
     text: ["Mascote da Universidade de Syracuse, nos Estados Unidos: uma laranja gigante e sorridente que anima os jogos de basquete e de futebol americano.", "A cor oficial da universidade é o laranja."],
     fact: "Os times esportivos da universidade se chamam Syracuse Orange.",
-    wiki: "Syracuse Orange", yt: "Otto the Orange Syracuse mascot" },
+    wiki: "Syracuse Orange", yt: "Otto the Orange Syracuse mascot",
+    img: "https://upload.wikimedia.org/wikipedia/commons/8/84/Otto_the_Orange_on_Scooter.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_the_Orange_on_Scooter.jpg" },
 
   { id: "palindromo", name: "OTTO ⇄ OTTO", years: "curiosidade", from: "o próprio nome", cat: "curi",
     tag: "Se lê igual de trás para a frente",
@@ -684,7 +794,9 @@ const OTTOS = [
     tag: "Um nome que significa riqueza",
     text: ["Otto vem do germânico antigo, de uma raiz que quer dizer riqueza, prosperidade ou boa sorte.", "Foi tão usado por reis e imperadores na Idade Média que uma dinastia inteira, a otoniana, leva esse nome."],
     fact: "Odo, nome comum na França medieval, tem a mesma origem.",
-    wiki: "Dinastia otoniana", yt: "dinastia otoniana" }
+    wiki: "Dinastia otoniana", yt: "dinastia otoniana",
+    img: "https://upload.wikimedia.org/wikipedia/commons/1/11/Otto_I_Manuscriptum_Mediolanense_c_1200.jpg",
+    credit: "Foto: Wikimedia Commons (autor e licença na página da imagem)", source: "https://commons.wikimedia.org/wiki/File:Otto_I_Manuscriptum_Mediolanense_c_1200.jpg" }
 ];
 
 /* ---------- Emblems: mirror-symmetric O/T compositions seeded by id ---------- */
@@ -755,6 +867,36 @@ function cell(ctx, x, y, s, shape, color, dir) {
   }
 }
 
+/* ---------- Photos ---------- */
+// Wikimedia serves resized copies of every file; use them so pages stay light.
+function thumbUrl(url, w) {
+  if (!url) return null;
+  if (url.includes("/thumb/")) {
+    const t = url.replace(/\/((?:lossy-page1-)?)\d+px-([^/]+)$/, `/$1${w}px-$2`);
+    return t !== url ? t : null;
+  }
+  const m = url.match(/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/([0-9a-f])\/([0-9a-f]{2})\/([^/]+)$/);
+  if (!m || /\.(tiff?|svg)$/i.test(m[3])) return null;
+  return `https://upload.wikimedia.org/wikipedia/commons/thumb/${m[1]}/${m[2]}/${m[3]}/${w}px-${m[3]}`;
+}
+// Tries the thumbnail, then the original file; calls onFail if both fail.
+function photo(o, w, cls, onFail) {
+  const tries = [thumbUrl(o.img, w), o.img].filter((u, i, a) => u && a.indexOf(u) === i);
+  const im = document.createElement("img");
+  im.alt = o.name; im.loading = "lazy"; im.decoding = "async"; im.referrerPolicy = "no-referrer";
+  if (cls) im.className = cls;
+  let k = 0;
+  im.addEventListener("error", () => { k++; if (k < tries.length) im.src = tries[k]; else onFail(im); });
+  im.src = tries[0];
+  return im;
+}
+function emblemCanvas(o, size) {
+  const cv = document.createElement("canvas");
+  cv.width = size; cv.height = size; cv.setAttribute("aria-hidden", "true");
+  drawEmblem(cv, o);
+  return cv;
+}
+
 /* ---------- UI ---------- */
 const $ = (id) => document.getElementById(id);
 const grid = $("grid"), chips = $("chips"), statusEl = $("status");
@@ -788,10 +930,11 @@ function buildGrid() {
     const b = document.createElement("button");
     b.type = "button"; b.className = "card"; b.dataset.id = o.id;
     b.setAttribute("aria-label", `${o.name}: ${o.tag}`);
-    const cv = document.createElement("canvas");
-    cv.width = 360; cv.height = 360; cv.setAttribute("aria-hidden", "true");
-    drawEmblem(cv, o);
-    b.appendChild(cv);
+    if (o.img) {
+      b.appendChild(photo(o, 500, "thumb", (im) => im.replaceWith(emblemCanvas(o, 360))));
+    } else {
+      b.appendChild(emblemCanvas(o, 360));
+    }
     const badges = [];
     if (o.br) badges.push('<span class="badge br">Brasil</span>');
     if (o.cat === "ficc") badges.push('<span class="badge">Ficção</span>');
@@ -882,10 +1025,8 @@ function render(id) {
   const media = $("p-media");
   media.innerHTML = "";
   if (o.img) {
-    const im = document.createElement("img"); im.src = o.img; im.alt = o.name; im.loading = "lazy";
-    im.referrerPolicy = "no-referrer";
-    im.addEventListener("error", () => { media.innerHTML = ""; const cv = document.createElement("canvas");
-      cv.width = 440; cv.height = 440; drawEmblem(cv, o); media.appendChild(cv); });
+    const im = photo(o, 960, "", () => { media.innerHTML = ""; media.appendChild(emblemCanvas(o, 440)); });
+    im.loading = "eager";
     media.appendChild(im);
     if (o.credit) {
       const cr = document.createElement("p"); cr.className = "p-credit";
@@ -918,8 +1059,10 @@ function render(id) {
   vbox.hidden = !yid;
   const links = [];
   if (o.video) links.push(`<a class="primary" href="${o.video}" target="_blank" rel="noopener">Assistir ao vídeo</a>`);
-  if (o.wiki) links.push(`<a ${o.video ? "" : 'class="primary"'} href="https://pt.wikipedia.org/w/index.php?search=${encodeURIComponent(o.wiki)}" target="_blank" rel="noopener">Ler na Wikipédia</a>`);
-  if (o.site) links.push(`<a ${o.wiki || o.video ? "" : 'class="primary"'} href="${o.site}" target="_blank" rel="noopener">Site oficial</a>`);
+  const readUrl = o.wikiUrl || (o.wiki ? `https://pt.wikipedia.org/w/index.php?search=${encodeURIComponent(o.wiki)}` : null);
+  const readLabel = !readUrl ? "" : /wikipedia\.org/.test(readUrl) ? (/\/\/en\./.test(readUrl) ? "Ler na Wikipédia (inglês)" : "Ler na Wikipédia") : "Ler mais";
+  if (readUrl) links.push(`<a ${o.video ? "" : 'class="primary"'} href="${readUrl}" target="_blank" rel="noopener">${readLabel}</a>`);
+  if (o.site) links.push(`<a ${readUrl || o.video ? "" : 'class="primary"'} href="${o.site}" target="_blank" rel="noopener">Site oficial</a>`);
   if (!o.video) links.push(`<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(o.yt || o.name)}" target="_blank" rel="noopener">Procurar vídeos</a>`);
   $("p-links").innerHTML = links.join("");
   const list = navList();
